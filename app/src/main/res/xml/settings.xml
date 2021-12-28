@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+        android:dialogTitle="设置视频文件夹"
+        android:inputType="text"
+        android:key="key_video_folder"
+        android:summary="设置视频文件夹"
+        android:title="设置视频文件夹" />
+
+</PreferenceScreen>

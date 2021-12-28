@@ -1,0 +1,4 @@
+<resources>
+    <dimen name="bottom_sheet_menu_dialog_padding">16dp</dimen>
+    <dimen name="bottom_sheet_menu_grid_icon_size">48dp</dimen>
+</resources>

@@ -1,0 +1,98 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.SecretGarden" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorSecondaryVariant">@color/teal_700</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+        <!-- Customize your theme here. -->
+    </style>
+
+    <style name="BottomSheetMenu.GridItem.TextAppearance.Light" parent="android:TextAppearance">
+        <item name="android:textColor">@color/bottom_sheet_list_item_color_light</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="BottomSheetMenu.Title" parent="@android:style/Widget.TextView">
+        <item name="android:layout_height">56dp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:paddingLeft">@dimen/bottom_sheet_menu_dialog_padding</item>
+        <item name="android:paddingRight">@dimen/bottom_sheet_menu_dialog_padding</item>
+    </style>
+
+
+    <style name="BottomSheetMenu.ListItem" parent="BottomSheetMenu.Title">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:paddingLeft">@dimen/bottom_sheet_menu_dialog_padding</item>
+        <item name="android:paddingRight">0dp</item>
+        <item name="android:layout_gravity">center_vertical</item>
+    </style>
+
+    <style name="BottomSheetMenu.GridItem" parent="BottomSheetMenu.ListItem">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:paddingLeft">0dp</item>
+        <item name="android:paddingBottom">16dp</item>
+
+    </style>
+
+    <declare-styleable name="DefaultTimeBar">
+        <attr name="bar_height" format="dimension" />
+        <attr name="touch_target_height" format="dimension" />
+        <attr name="ad_marker_width" format="dimension" />
+        <attr name="scrubber_enabled_size" format="dimension" />
+        <attr name="scrubber_disabled_size" format="dimension" />
+        <attr name="scrubber_dragged_size" format="dimension" />
+        <attr name="scrubber_drawable" format="reference" />
+        <attr name="played_color" format="color" />
+        <attr name="scrubber_color" format="color" />
+        <attr name="buffered_color" format="color" />
+        <attr name="unplayed_color" format="color" />
+        <attr name="ad_marker_color" format="color" />
+        <attr name="played_ad_marker_color" format="color" />
+    </declare-styleable>
+
+    <drawable name="exo_styled_controls_play">@drawable/exo_ic_play_circle_filled</drawable>
+    <drawable name="exo_styled_controls_next">@drawable/exo_ic_skip_next</drawable>
+    <drawable name="exo_styled_controls_previous">@drawable/exo_ic_skip_previous</drawable>
+    <drawable name="exo_styled_controls_fastforward">@drawable/exo_ic_forward</drawable>
+    <drawable name="exo_styled_controls_rewind">@drawable/exo_ic_rewind</drawable>
+    <drawable name="exo_styled_controls_fullscreen_enter">@drawable/exo_ic_fullscreen_enter
+    </drawable>
+
+    <dimen name="exo_icon_size">52dp</dimen>
+    <dimen name="exo_icon_horizontal_margin">5dp</dimen>
+    <dimen name="exo_icon_padding">2dp</dimen>
+    <dimen name="exo_icon_text_size">9dp</dimen>
+    <dimen name="exo_icon_padding_bottom">18dp</dimen>
+
+    <dimen name="exo_styled_controls_padding">0dp</dimen>
+
+    <color name="exo_white">#ffffff</color>
+    <color name="exo_white_opacity_70">#B3ffffff</color>
+    <dimen name="exo_media_button_width">71dp</dimen>
+    <dimen name="exo_media_button_height">52dp</dimen>
+
+
+    <style name="ExoStyledControls" />
+
+    <style name="ExoStyledControls.ButtonText">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">@dimen/exo_icon_text_size</item>
+        <item name="android:textColor">@color/exo_white</item>
+    </style>
+
+    <string name="exo_controls_time_placeholder" translatable="false">00:00:00</string>
+
+
+</resources>

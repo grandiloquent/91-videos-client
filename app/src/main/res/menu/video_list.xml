@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_selector"
+        android:icon="@drawable/ic_action_folder_open"
+        android:title="选择文件夹"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_bookmark"
+        android:icon="@drawable/ic_action_bookmark"
+        android:title="书签"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_fav"
+        android:icon="@drawable/ic_action_favorite"
+        android:title="收藏"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_favorite_border"
+        android:icon="@drawable/ic_action_favorite_border"
+        android:title="取消收藏"
+        app:showAsAction="never" />
+</menu>
