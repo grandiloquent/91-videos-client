@@ -126,7 +126,10 @@ public class WebActivity extends AppCompatActivity {
     }
 
     public static Pair<String, String> processCk(Context context, String videoAddress) {
-        String response = Native.fetchCk(videoAddress, SettingsFragment.getCkCookie(context, null));
+        String response = Native.fetchCk(videoAddress, SettingsFragment.getString(context,
+                SettingsFragment.KEY_CK_COOKIE,null),
+                SettingsFragment.getString(context,
+                        SettingsFragment.KEY_USER_AGENT,null));
         if (response == null) {
             return null;
         }

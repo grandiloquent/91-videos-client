@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
+import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -11,6 +12,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import java.io.ByteArrayInputStream;
+import java.io.Console;
 import java.util.Arrays;
 
 
@@ -46,8 +48,9 @@ public class CustomWebViewClient extends WebViewClient {
     @Override
     public void onPageFinished(WebView view, String url) {
         String cookie;
-        if (url.contains("vodplay") && (cookie = CookieManager.getInstance().getCookie(url)) != null)
-            SettingsFragment.updateCkCookie(mContext, cookie);
+        if (url.contains("vodplay") && (cookie = CookieManager.getInstance().getCookie(url)) != null) {
+            SettingsFragment.setString(mContext, SettingsFragment.KEY_CK_COOKIE, cookie);
+        }
     }
 
     @Override

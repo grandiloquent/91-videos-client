@@ -15,17 +15,19 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 
     public static final String KEY_VIDEO_FOLDER = "key_video_folder";
     public static final String KEY_CK_COOKIE = "key_ck_cookie";
+    // USER_AGENT user-agent
+    public static final String KEY_USER_AGENT = "user-agent";
 
-    public static void updateCkCookie(Context context, String value) {
+    public static void setString(Context context,String key, String value) {
         PreferenceManager.getDefaultSharedPreferences(context)
                 .edit()
-                .putString(KEY_CK_COOKIE, value)
+                .putString(key, value)
                 .apply();
     }
 
-    public static String getCkCookie(Context context, String defValue) {
+    public static String getString(Context context,String key, String defValue) {
         return PreferenceManager.getDefaultSharedPreferences(context)
-                .getString(KEY_CK_COOKIE, defValue);
+                .getString(key, defValue);
     }
 
     @Override

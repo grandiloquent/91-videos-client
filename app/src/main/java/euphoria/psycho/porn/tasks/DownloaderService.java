@@ -74,18 +74,19 @@ public class DownloaderService extends Service {
         }
     }
 
-    private void createDatabase(String downloadLink, String response, File dir) {
-        File database = new File(dir, "data.db");
+    // String title, String downloadLink, String response, File dir
+    private void createDatabase(DatabaseParameter databaseParameter) {
+        File database = new File(databaseParameter.dir, "data.db");
         if (database.exists()) {
             return;
         }
-        List<Task> tasks = createTasks(response);
+        List<Task> tasks = createTasks(databaseParameter.response);
         String dbName = database.getAbsolutePath();
         TaskDatabase db = Room.databaseBuilder(getApplicationContext(), TaskDatabase.class, dbName).build();
         db.taskDao().insertAll(tasks.toArray(new Task[0]));
         TaskInfo taskInfo = new TaskInfo();
         taskInfo.segmentSize = tasks.size();
-        taskInfo.uri = downloadLink;
+        taskInfo.uri = databaseParameter.downloadLink;
         db.taskInfoDao().insertAll(taskInfo);
     }
 
@@ -98,8 +99,8 @@ public class DownloaderService extends Service {
         return dir;
     }
 
-    private void createTask(String downloadLink) throws IOException {
-        String response = getString(downloadLink);
+    private void createTask(Pair<String, String> info) throws IOException {
+        String response = getString(info.second);
         if (response == null) {
             throw new NullPointerException();
         }
@@ -108,7 +109,7 @@ public class DownloaderService extends Service {
         if (database.exists()) {
             return;
         }
-        createDatabase(downloadLink, response, dir);
+        createDatabase(new DatabaseParameter(info.first, info.second, response, dir));
     }
 
     private List<Task> createTasks(String response) {
@@ -165,26 +166,39 @@ public class DownloaderService extends Service {
             createNotificationChannel(this, DOWNLOAD_VIDEO, "下载视频频道");
         }
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        showNotification("下载");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String videoAddress = intent.getStringExtra(EXTRA_VIDEO_ADDRESS);
-        showNotification("添加新任务：" + videoAddress);
         new Thread(() -> {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
             Pair<String, String> info = getVideoInformation(videoAddress);
             if (info != null) {
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        showNotification("准备下载：" + info.first);
-                    }
-                });
+                try {
+                    createTask(info);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
 
         }).start();
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    private static class DatabaseParameter {
+        public String title;
+        public String downloadLink;
+        public String response;
+        public File dir;
+
+        public DatabaseParameter(String title, String downloadLink, String response, File dir) {
+            this.title = title;
+            this.downloadLink = downloadLink;
+            this.response = response;
+            this.dir = dir;
+        }
     }
 }
