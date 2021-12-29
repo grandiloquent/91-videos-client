@@ -1,10 +1,12 @@
 package euphoria.psycho.porn;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Pair;
 import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
@@ -110,6 +112,30 @@ public class WebActivity extends AppCompatActivity {
         mWebView.loadUrl("http://47.106.105.122/video.html");
     }
 
+    public static Pair<String, String> process91Porn(String videoAddress) {
+        String response = Native.fetch91Porn(Uri.parse(videoAddress).getQueryParameter("viewkey"));
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = new JSONObject(response);
+            String title = jsonObject.getString("title");
+            String src = jsonObject.getString("videoUri");
+            return Pair.create(title, src);
+        } catch (JSONException ignored) {
+        }
+        return null;
+    }
+
+    public static Pair<String, String> processCk(Context context, String videoAddress) {
+        String response = Native.fetchCk(videoAddress, SettingsFragment.getCkCookie(context, null));
+        if (response == null) {
+            return null;
+        }
+        String title = Shared.substringBefore(response, "\n").trim();
+        String src = Shared.substringAfter(response, "\n")
+                .replaceAll("\\\\", "");
+        return Pair.create(title, src);
+    }
+
     private class JavaInterface {
 
         @JavascriptInterface
@@ -117,28 +143,14 @@ public class WebActivity extends AppCompatActivity {
             new Thread(() -> {
                 Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
                 String[] videoUris = null;
+                Pair<String, String> results;
                 if (uri.contains("91porn.com")) {
-                    String response = Native.fetch91Porn(
-                            Uri.parse(uri).getQueryParameter("viewkey")
-                    );
-                    if (response != null) {
-                        JSONObject object = null;
-                        try {
-                            object = new JSONObject(response);
-                            videoUris = new String[]{
-                                    object.getString("title")
-                                    , object.getString("videoUri")};
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                    results = process91Porn(uri);
                 } else {
-                    String response = Native.fetchCk(uri);
-                    videoUris = new String[]{
-                            Shared.substringBefore(response, "\n").trim(),
-                            Shared.substringAfter(response, "\n")
-                            .replaceAll("\\\\",""),
-                    };
+                    results = process91Porn(uri);
+                }
+                if (results != null) {
+                    videoUris = new String[]{results.first, results.second};
                 }
 //                else if (uri.contains("xvideos.com")) {
 //                    videoUris = Native.fetchXVideos(uri);

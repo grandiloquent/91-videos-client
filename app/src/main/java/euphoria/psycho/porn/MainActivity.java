@@ -1,10 +1,9 @@
 package euphoria.psycho.porn;
 
 import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.Process;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.webkit.CookieManager;
@@ -15,12 +14,14 @@ import android.webkit.WebView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import euphoria.psycho.porn.tasks.DownloaderService;
 
 import static euphoria.psycho.porn.Shared.requestStoragePremissions;
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
     private WebView mWebView;
+
 
     private void launchBottomSheet() {
         ModalBottomSheet modalBottomSheet = new ModalBottomSheet();
@@ -60,16 +61,22 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 //            WebViewShare.downloadFile(context, fileName, url, userAgent);
 //        });
 //        WebViewShare.setWebView(webView, Helper.createCacheDirectory(context).getAbsolutePath());
-        mWebView.setWebViewClient(new CustomWebViewClient());
+        mWebView.setWebViewClient(new CustomWebViewClient(this));
 //        webView.setWebChromeClient(new CustomWebChromeClient(context));
 //        webView.setDownloadListener(Helper.getDownloadListener(context));
         setUpWebComponents();
         setUpJavascriptInterface();
         setUpCookie();
+        //SettingsFragment.updateCkCookie(this,"UM_distinctid=17e0691173987d-08930e62bd539a-57b1a33-e1000-17e0691173a119a; CNZZDATA1279721426=1544845544-1640786269-null%7C1640786269; 1f46f65ee0066dbf94c675090a7cea91=b9f11456e12e3065d7bc567049fbc2a5");
         mWebView.loadUrl("http://47.106.105.122");
-
+        //start(this, "http://937ck.us/vodplay/16302-1-1.html");
     }
 
+    public static void start(Context context, String videoAddress) {
+        Intent starter = new Intent(context, DownloaderService.class);
+        starter.putExtra(DownloaderService.EXTRA_VIDEO_ADDRESS, videoAddress);
+        context.startService(starter);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -102,5 +109,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         return true;
     }
 
-
+    @Override
+    public void onBackPressed() {
+        if (mWebView.canGoBack()) {
+            mWebView.goBack();
+            return;
+        }
+        super.onBackPressed();
+    }
 }

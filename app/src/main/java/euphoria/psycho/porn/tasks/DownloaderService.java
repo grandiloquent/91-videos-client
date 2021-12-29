@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Process;
 
@@ -24,18 +25,26 @@ import javax.net.ssl.SSLContext;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.room.Room;
+import euphoria.psycho.porn.Native;
 import euphoria.psycho.porn.Shared;
+import euphoria.psycho.porn.WebActivity;
 
 import android.app.Notification.Builder;
 import android.app.Notification.Builder;
 import android.telephony.mbms.DownloadRequest;
 import android.util.Log;
+import android.util.Pair;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class DownloaderService extends Service {
     public static final String DOWNLOAD_VIDEO = "DOWNLOAD_VIDEO";
+    public static final String EXTRA_VIDEO_ADDRESS = "video_address";
     public static final String KEY_DOWNLOAD_LINK = "DOWNLOAD_LINK";
     public static final String KEY_DOWNLOAD_TITLE = "DOWNLOAD_TITLE";
     private NotificationManager mNotificationManager;
+    private Handler mHandler = new Handler();
 
     @RequiresApi(api = VERSION_CODES.O)
     public static void createNotificationChannel(Context context, String id, CharSequence name) {
@@ -119,7 +128,17 @@ public class DownloaderService extends Service {
         return tasks;
     }
 
-    private void showNotification() {
+    private Pair<String, String> getVideoInformation(String videoAddress) {
+        Pair<String, String> results;
+        if (videoAddress.contains("91porn.com")) {
+            results = WebActivity.process91Porn(videoAddress);
+        } else {
+            results = WebActivity.processCk(this, videoAddress);
+        }
+        return results;
+    }
+
+    private void showNotification(String title) {
         Builder builder;
         if (VERSION.SDK_INT >= VERSION_CODES.O) {
             builder = new Builder(this, DOWNLOAD_VIDEO);
@@ -128,7 +147,7 @@ public class DownloaderService extends Service {
         }
         Intent i = new Intent(this, DownloaderActivity.class);
         builder.setSmallIcon(android.R.drawable.stat_sys_download)
-                .setContentTitle("下载")
+                .setContentTitle(title)
                 .setContentIntent(PendingIntent.getActivity(this, 1, i, 0));
         mNotificationManager.notify(1, builder.build());
     }
@@ -146,19 +165,25 @@ public class DownloaderService extends Service {
             createNotificationChannel(this, DOWNLOAD_VIDEO, "下载视频频道");
         }
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        showNotification();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String downloadLink = intent.getStringExtra(KEY_DOWNLOAD_LINK);
+        String videoAddress = intent.getStringExtra(EXTRA_VIDEO_ADDRESS);
+        showNotification("添加新任务：" + videoAddress);
         new Thread(() -> {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-            try {
-                createTask(downloadLink);
-            } catch (IOException e) {
-                e.printStackTrace();
+            Pair<String, String> info = getVideoInformation(videoAddress);
+            if (info != null) {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        showNotification("准备下载：" + info.first);
+                    }
+                });
             }
+
+
         }).start();
         return super.onStartCommand(intent, flags, startId);
     }

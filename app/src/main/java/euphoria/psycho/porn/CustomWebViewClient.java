@@ -1,20 +1,16 @@
 package euphoria.psycho.porn;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
-import android.webkit.ValueCallback;
+import android.webkit.CookieManager;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.Arrays;
 
 
@@ -34,21 +30,24 @@ public class CustomWebViewClient extends WebViewClient {
             new ByteArrayInputStream("".getBytes())
     );
     private String mJavaScript;
+    private final Context mContext;
 
-    public CustomWebViewClient() {
+    public CustomWebViewClient(Context context) {
 //        mClientInterface = clientInterface;
 //        try {
 //            mJavaScript = FileShare.readText(clientInterface.getContext().getAssets().open("youtube.js"));
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
+        mContext = context;
     }
 
 
     @Override
     public void onPageFinished(WebView view, String url) {
-        //view.evaluateJavascript(mJavaScript, null);
-
+        String cookie;
+        if (url.contains("vodplay") && (cookie = CookieManager.getInstance().getCookie(url)) != null)
+            SettingsFragment.updateCkCookie(mContext, cookie);
     }
 
     @Override

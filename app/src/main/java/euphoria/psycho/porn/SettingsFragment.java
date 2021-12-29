@@ -1,5 +1,6 @@
 package euphoria.psycho.porn;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
@@ -13,6 +14,19 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 
 
     public static final String KEY_VIDEO_FOLDER = "key_video_folder";
+    public static final String KEY_CK_COOKIE = "key_ck_cookie";
+
+    public static void updateCkCookie(Context context, String value) {
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .edit()
+                .putString(KEY_CK_COOKIE, value)
+                .apply();
+    }
+
+    public static String getCkCookie(Context context, String defValue) {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+                .getString(KEY_CK_COOKIE, defValue);
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
