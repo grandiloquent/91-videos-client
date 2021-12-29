@@ -1,5 +1,6 @@
 package euphoria.psycho.porn.tasks;
 
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -25,7 +26,6 @@ import euphoria.psycho.porn.Shared;
 
 public class DownloaderActivity extends AppCompatActivity {
     private RecyclerView mRoot;
-
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

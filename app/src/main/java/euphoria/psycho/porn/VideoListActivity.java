@@ -3,10 +3,12 @@ package euphoria.psycho.porn;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
 
 import com.google.android.material.dialog.MaterialDialogs;
@@ -89,6 +91,7 @@ public class VideoListActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         mVideoItemAdapter = new VideoItemAdapter(this);
         mRecyclerView.setAdapter(mVideoItemAdapter);
+        mRecyclerView.addItemDecoration(new SpacesItemDecoration(Shared.dpToPx(this, 12)));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         initialize();
     }
@@ -136,6 +139,25 @@ public class VideoListActivity extends AppCompatActivity {
             finish();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public class SpacesItemDecoration extends RecyclerView.ItemDecoration {
+        private int space;
+
+        public SpacesItemDecoration(int space) {
+            this.space = space;
+        }
+
+        @Override
+        public void getItemOffsets(Rect outRect, View view,
+                                   RecyclerView parent, RecyclerView.State state) {
+            outRect.left = space;
+            outRect.right = space;
+            outRect.bottom = space;
+            // Add top margin only for the first item to avoid double space between items
+            if (parent.getChildPosition(view) == 0)
+                outRect.top = space;
+        }
     }
 
 }

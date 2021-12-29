@@ -1,6 +1,9 @@
 package euphoria.psycho.porn;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.StrictMode;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -83,7 +86,17 @@ public class VideoItemAdapter extends RecyclerView.Adapter<ViewHolder> {
                     addDirectories(popupMenu);
                     popupMenu.show();
                     popupMenu.setOnMenuItemClickListener(item -> {
-                        if (item.getItemId() == R.id.action_menu) {
+                        if (item.getItemId() == R.id.action_send) {
+                            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+                            StrictMode.setVmPolicy(builder.build());
+
+                            VideoItem videoItem = mVideoItems.get(getAdapterPosition());
+                            File file = new File(videoItem.path);
+                            Intent shareIntent = new Intent();
+                            shareIntent.setAction(Intent.ACTION_SEND);
+                            shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
+                            shareIntent.setType("video/*");
+                            mContext.startActivity(Intent.createChooser(shareIntent, "发送视频"));
                         } else {
                             performMoveFile(item);
                         }
@@ -101,7 +114,7 @@ public class VideoItemAdapter extends RecyclerView.Adapter<ViewHolder> {
             VideoItem videoItem = mVideoItems.get(getAdapterPosition());
             File file = new File(videoItem.path);
             file.renameTo(new File(dir, Shared.substringAfterLast(videoItem.path, "/")));
-            int position=getAdapterPosition();
+            int position = getAdapterPosition();
             mVideoItems.remove(position);
             notifyItemRemoved(position);
         }

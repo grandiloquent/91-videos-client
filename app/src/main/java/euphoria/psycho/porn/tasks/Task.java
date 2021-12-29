@@ -9,7 +9,7 @@ import androidx.room.PrimaryKey;
 @Entity(indices = {
         @Index(value = {"sequence"}, unique = true)
 })
-public class DownloaderTask {
+public class Task {
     @PrimaryKey(autoGenerate = true)
     public int uid;
     @ColumnInfo(name = "uri")

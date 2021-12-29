@@ -1,12 +1,16 @@
 package euphoria.psycho.porn.tasks;
 
-import android.app.ProgressDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Environment;
 import android.os.IBinder;
 import android.os.Process;
-import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,12 +22,27 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.room.Room;
 import euphoria.psycho.porn.Shared;
 
+import android.app.Notification.Builder;
+import android.app.Notification.Builder;
+import android.telephony.mbms.DownloadRequest;
+import android.util.Log;
+
 public class DownloaderService extends Service {
+    public static final String DOWNLOAD_VIDEO = "DOWNLOAD_VIDEO";
     public static final String KEY_DOWNLOAD_LINK = "DOWNLOAD_LINK";
     public static final String KEY_DOWNLOAD_TITLE = "DOWNLOAD_TITLE";
+    private NotificationManager mNotificationManager;
+
+    @RequiresApi(api = VERSION_CODES.O)
+    public static void createNotificationChannel(Context context, String id, CharSequence name) {
+        NotificationChannel channel = new NotificationChannel(id, name, NotificationManager.IMPORTANCE_LOW);
+        context.getSystemService(NotificationManager.class)
+                .createNotificationChannel(channel);
+    }
 
     private static String getString(String uri) throws IOException {
         URL url = new URL(uri);
@@ -46,12 +65,20 @@ public class DownloaderService extends Service {
         }
     }
 
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+    private void createDatabase(String downloadLink, String response, File dir) {
+        File database = new File(dir, "data.db");
+        if (database.exists()) {
+            return;
+        }
+        List<Task> tasks = createTasks(response);
+        String dbName = database.getAbsolutePath();
+        TaskDatabase db = Room.databaseBuilder(getApplicationContext(), TaskDatabase.class, dbName).build();
+        db.taskDao().insertAll(tasks.toArray(new Task[0]));
+        TaskInfo taskInfo = new TaskInfo();
+        taskInfo.segmentSize = tasks.size();
+        taskInfo.uri = downloadLink;
+        db.taskInfoDao().insertAll(taskInfo);
     }
-
 
     private File createDirectory(String contents) {
         String directoryName = Shared.md5(contents);
@@ -62,56 +89,77 @@ public class DownloaderService extends Service {
         return dir;
     }
 
-
     private void createTask(String downloadLink) throws IOException {
         String response = getString(downloadLink);
         if (response == null) {
             throw new NullPointerException();
         }
         File dir = createDirectory(response);
+        File database = new File(dir, "data.db");
+        if (database.exists()) {
+            return;
+        }
         createDatabase(downloadLink, response, dir);
     }
 
-
-    private void createDatabase(String downloadLink, String response, File dir) {
+    private List<Task> createTasks(String response) {
         String[] segments = response.split("\n");
         int sequence = 0;
-        List<DownloaderTask> downloaderTasks = new ArrayList<>();
+        List<Task> tasks = new ArrayList<>();
         for (int i = 0; i < segments.length; i++) {
             if (segments[i].startsWith("#EXTINF:")) {
                 String segment = segments[i + 1];
-                DownloaderTask downloaderTask = new DownloaderTask();
-                downloaderTask.uri = segment;
-                downloaderTask.sequence = sequence++;
-                downloaderTasks.add(downloaderTask);
+                Task task = new Task();
+                task.uri = segment;
+                task.sequence = sequence++;
+                tasks.add(task);
                 i++;
             }
         }
-        String dbName = new File(dir, "data.db").getAbsolutePath();
-        DownloaderTaskDatabase db = Room.databaseBuilder(getApplicationContext(), DownloaderTaskDatabase.class, dbName).build();
-        db.downloaderTaskDao().insertAll(downloaderTasks.toArray(new DownloaderTask[0]));
-        DownloaderTaskInfo downloaderTaskInfo = new DownloaderTaskInfo();
-        downloaderTaskInfo.segmentSize = downloaderTasks.size();
-        downloaderTaskInfo.uri = downloadLink;
-        db.downloaderTaskInfoDao().insertAll(downloaderTaskInfo);
+        return tasks;
     }
 
+    private void showNotification() {
+        Builder builder;
+        if (VERSION.SDK_INT >= VERSION_CODES.O) {
+            builder = new Builder(this, DOWNLOAD_VIDEO);
+        } else {
+            builder = new Builder(this);
+        }
+        Intent i = new Intent(this, DownloaderActivity.class);
+        builder.setSmallIcon(android.R.drawable.stat_sys_download)
+                .setContentTitle("下载")
+                .setContentIntent(PendingIntent.getActivity(this, 1, i, 0));
+        mNotificationManager.notify(1, builder.build());
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        if (VERSION.SDK_INT >= VERSION_CODES.O) {
+            createNotificationChannel(this, DOWNLOAD_VIDEO, "下载视频频道");
+        }
+        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        showNotification();
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String downloadLink = intent.getStringExtra(KEY_DOWNLOAD_LINK);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-                try {
-                    createTask(downloadLink);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        new Thread(() -> {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            try {
+                createTask(downloadLink);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }).start();
         return super.onStartCommand(intent, flags, startId);
     }
-
 }

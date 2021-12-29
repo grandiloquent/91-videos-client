@@ -44,6 +44,7 @@ public class ModalBottomSheet extends BottomSheetDialogFragment {
         bottomSheetItem.title = "视频";
         bottomSheetItem.listener = (view1, position) -> {
             startVideoList(getContext());
+            getDialog().dismiss();
         };
         return bottomSheetItem;
     }
@@ -55,9 +56,11 @@ public class ModalBottomSheet extends BottomSheetDialogFragment {
         bottomSheetItem.listener = (view1, position) -> {
             Intent starter = new Intent(getContext(), SettingsActivity.class);
             getContext().startActivity(starter);
+            getDialog().dismiss();
         };
         return bottomSheetItem;
     }
+
     private static void startVideoList(Context context) {
         Intent starter = new Intent(context, VideoListActivity.class);
         context.startActivity(starter);

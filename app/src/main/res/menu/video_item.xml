@@ -3,8 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_menu"
+        android:id="@+id/action_send"
         android:icon="@android:drawable/arrow_down_float"
-        android:title="菜单"
+        android:title="发送"
         app:showAsAction="ifRoom" />
 </menu>
