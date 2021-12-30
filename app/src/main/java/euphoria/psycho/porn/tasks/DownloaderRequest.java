@@ -43,7 +43,7 @@ public class DownloaderRequest implements Runnable {
         mTasks = taskDatabase.taskDao().getAll();
         mListener = listener;
         mBaseUri = Shared.substringBeforeLast(mTaskInfo.uri, "/") + "/";
-        mDirectory = new File(mTaskInfo.fileName).getParentFile().getAbsolutePath();
+        mDirectory = new File(mTaskInfo.directory).getAbsolutePath();
     }
 
     public int getStatus() {
@@ -58,6 +58,10 @@ public class DownloaderRequest implements Runnable {
         mPaused = paused;
     }
 
+    private File createSegmentFile(Task task) {
+        return new File(mDirectory, Shared.substringBefore(task.uri, "?"));
+    }
+
     private void emitSynchronizationEvent(int status) {
         mStatus = status;
         mListener.onProgress(this);
@@ -68,11 +72,9 @@ public class DownloaderRequest implements Runnable {
         }
     }
 
-
-    private File createSegmentFile(Task task) {
-        return new File(mDirectory, Shared.substringBefore(task.uri, "?"));
+    public TaskInfo getTaskInfo() {
+        return mTaskInfo;
     }
-
 
     @Override
     public void run() {

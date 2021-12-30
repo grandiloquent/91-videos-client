@@ -18,4 +18,6 @@ public class TaskInfo {
     public int status;
     @ColumnInfo(name = "sequence")
     public int sequence;
+    @ColumnInfo(name = "directory")
+    public String directory;
 }

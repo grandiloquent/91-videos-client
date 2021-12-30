@@ -31,6 +31,9 @@ import android.os.Process;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import euphoria.psycho.porn.tasks.DownloaderService;
+
+import static euphoria.psycho.porn.Shared.USER_AGENT;
 
 public class WebActivity extends AppCompatActivity {
     public static final String EXTRA_VIDEO_URL = "extra_video_url";
@@ -114,6 +117,9 @@ public class WebActivity extends AppCompatActivity {
 
     public static Pair<String, String> process91Porn(String videoAddress) {
         String response = Native.fetch91Porn(Uri.parse(videoAddress).getQueryParameter("viewkey"));
+        if (response == null) {
+            return null;
+        }
         JSONObject jsonObject = null;
         try {
             jsonObject = new JSONObject(response);
@@ -127,9 +133,9 @@ public class WebActivity extends AppCompatActivity {
 
     public static Pair<String, String> processCk(Context context, String videoAddress) {
         String response = Native.fetchCk(videoAddress, SettingsFragment.getString(context,
-                SettingsFragment.KEY_CK_COOKIE,null),
+                SettingsFragment.KEY_CK_COOKIE, null),
                 SettingsFragment.getString(context,
-                        SettingsFragment.KEY_USER_AGENT,null));
+                        SettingsFragment.KEY_USER_AGENT, null));
         if (response == null) {
             return null;
         }
@@ -140,6 +146,16 @@ public class WebActivity extends AppCompatActivity {
     }
 
     private class JavaInterface {
+        @JavascriptInterface
+        public void download(String videoUri, String title) {
+            if (videoUri.contains("m3u8")) {
+                Intent starter = new Intent(WebActivity.this, DownloaderService.class);
+                starter.putExtra(DownloaderService.EXTRA_VIDEO_ADDRESS, videoUri);
+                WebActivity.this.startService(starter);
+            } else {
+                Shared.downloadFile(WebActivity.this, (title == null ? Shared.toHex(videoUri.getBytes(StandardCharsets.UTF_8)) : title) + ".mp4", videoUri, USER_AGENT);
+            }
+        }
 
         @JavascriptInterface
         public void parse(String uri) {
@@ -150,7 +166,7 @@ public class WebActivity extends AppCompatActivity {
                 if (uri.contains("91porn.com")) {
                     results = process91Porn(uri);
                 } else {
-                    results = process91Porn(uri);
+                    results = processCk(WebActivity.this, uri);
                 }
                 if (results != null) {
                     videoUris = new String[]{results.first, results.second};

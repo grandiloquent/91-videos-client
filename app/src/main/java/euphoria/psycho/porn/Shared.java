@@ -6,6 +6,8 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
+import android.app.DownloadManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -41,11 +43,14 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.webkit.CookieManager;
+import android.webkit.MimeTypeMap;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
@@ -72,6 +77,7 @@ import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -92,12 +98,14 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.graphics.drawable.RoundedBitmapDrawable;
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 
+import static android.content.Context.DOWNLOAD_SERVICE;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 public class Shared {
     public static final long POLY64REV = 0x95AC9329AC4BC9B5L;
     public static final int UNCONSTRAINED = -1;
+    public static String USER_AGENT = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1";
     public static long[] sCrcTable = new long[256];
     // A device reporting strictly more total memory in megabytes cannot be considered 'low-end'.
     private static final int ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB = 512;
@@ -463,6 +471,30 @@ public class Shared {
         return null;
     }
 
+    public static void downloadFile(Context context, String fileName, String url, String userAgent) {
+        try {
+            DownloadManager downloadManager = (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
+            DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+            String cookie = CookieManager.getInstance().getCookie(url);
+            request.allowScanningByMediaScanner();
+            request.setTitle(fileName)
+                    .setDescription("正在下载")
+                    .addRequestHeader("cookie", cookie)
+                    .addRequestHeader("User-Agent", userAgent)
+                    .setMimeType(getFileType(context, url))
+                    .setAllowedOverMetered(true)
+                    .setAllowedOverRoaming(true)
+                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE | DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                    .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+            downloadManager.enqueue(request);
+            Toast.makeText(context, "开始下载", Toast.LENGTH_SHORT).show();
+        } catch (Exception exception) {
+            Toast.makeText(context, "下载错误", Toast.LENGTH_SHORT).show();
+
+
+        }
+    }
+
     /**
      * Converts density-independent pixels (dp) to pixels on the screen (px).
      *
@@ -626,6 +658,12 @@ public class Shared {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static String getFileType(Context context, String url) {
+        ContentResolver contentResolver = context.getContentResolver();
+        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+        return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(Uri.parse(url)));
     }
 
     /**
@@ -1087,6 +1125,26 @@ public class Shared {
         int index = string.lastIndexOf(delimiter);
         if (index != -1) return string.substring(0, index);
         return string;
+    }
+
+    public static String toHex(byte[] data) {
+        if (null == data) {
+            return null;
+        }
+        if (data.length <= 0) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < data.length; i++) {
+            String hv = Integer.toHexString(data[i]);
+            if (hv.length() < 2) {
+                sb.append("0");
+            } else if (hv.length() == 8) {
+                hv = hv.substring(6);
+            }
+            sb.append(hv);
+        }
+        return sb.toString().toLowerCase(Locale.getDefault());
     }
 
     public static String toString(InputStream stream) throws IOException {

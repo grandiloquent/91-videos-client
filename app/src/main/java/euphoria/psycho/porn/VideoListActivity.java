@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import androidx.annotation.NonNull;
@@ -92,7 +93,7 @@ public class VideoListActivity extends AppCompatActivity {
         mVideoItemAdapter = new VideoItemAdapter(this);
         mRecyclerView.setAdapter(mVideoItemAdapter);
         mRecyclerView.addItemDecoration(new SpacesItemDecoration(Shared.dpToPx(this, 12)));
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         initialize();
     }
 
@@ -140,8 +141,7 @@ public class VideoListActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
-    public class SpacesItemDecoration extends RecyclerView.ItemDecoration {
+    public static class SpacesItemDecoration extends RecyclerView.ItemDecoration {
         private int space;
 
         public SpacesItemDecoration(int space) {

@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import java.io.File;
+import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,15 +26,15 @@ public class FileListActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         setContentView(R.layout.file_list_activity);
         mRecyclerView = findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mFileAdapter = new FileAdapter(this);
         mRecyclerView.setAdapter(mFileAdapter);
         mDirectory = PreferenceManager.getDefaultSharedPreferences(this)
-                .getString(SettingsFragment.KEY_VIDEO_FOLDER, "/storage/emulated/0/Download/TikTokVids");
-        if (mDirectory == null ) {
+                .getString(SettingsFragment.KEY_VIDEO_FOLDER, getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath());
+        if (mDirectory == null) {
             mFileAdapter.setDirectory(null);
         } else
             mFileAdapter.setDirectory(new File(mDirectory));

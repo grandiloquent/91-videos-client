@@ -1,8 +1,18 @@
 package euphoria.psycho.porn;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.net.Uri;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
+import android.widget.Toast;
+
+import java.nio.charset.StandardCharsets;
+
+import euphoria.psycho.porn.tasks.DownloaderService;
+
+import static euphoria.psycho.porn.Shared.USER_AGENT;
 
 public class JavaScriptInterface {
     private Activity mActivity;
@@ -17,4 +27,16 @@ public class JavaScriptInterface {
         starter.putExtra(WebActivity.EXTRA_VIDEO_URL, uri);
         mActivity.startActivity(starter);
     }
+
+    @JavascriptInterface
+    public void download(String uri, String title) {
+        if (uri.contains("m3u8")) {
+            Intent starter = new Intent(mActivity, DownloaderService.class);
+            starter.putExtra(DownloaderService.EXTRA_VIDEO_ADDRESS, uri);
+            mActivity.startService(starter);
+        } else {
+            Shared.downloadFile(mActivity, (title == null ? Shared.toHex(uri.getBytes(StandardCharsets.UTF_8)) : title) + ".mp4", uri, USER_AGENT);
+        }
+    }
+
 }

@@ -36,7 +36,7 @@ public class DownloaderActivity extends AppCompatActivity {
 
     public static void start(Context context, String downloadLink) {
         Intent starter = new Intent(context, DownloaderService.class);
-        starter.putExtra(DownloaderService.KEY_DOWNLOAD_LINK, downloadLink);
+        starter.putExtra(DownloaderService.EXTRA_VIDEO_ADDRESS, downloadLink);
         context.startService(starter);
     }
 

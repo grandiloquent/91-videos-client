@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             SettingsFragment.setString(this, SettingsFragment.KEY_USER_AGENT, ua);
         }
         mWebView.loadUrl("http://47.106.105.122");
-        start(this, "http://937ck.us/vodplay/16302-1-1.html");
+        //start(this, "http://937ck.us/vodplay/16302-1-1.html");
     }
 
     public static void start(Context context, String videoAddress) {

@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -38,13 +40,14 @@ import android.util.Pair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class DownloaderService extends Service {
+public class DownloaderService extends Service implements RequestListener {
     public static final String DOWNLOAD_VIDEO = "DOWNLOAD_VIDEO";
     public static final String EXTRA_VIDEO_ADDRESS = "video_address";
-    public static final String KEY_DOWNLOAD_LINK = "DOWNLOAD_LINK";
-    public static final String KEY_DOWNLOAD_TITLE = "DOWNLOAD_TITLE";
+    private final Handler mHandler = new Handler();
     private NotificationManager mNotificationManager;
-    private Handler mHandler = new Handler();
+    private ExecutorService mExecutorService = Executors.newFixedThreadPool(3);
+    private List<DownloaderRequest> mDownloaderRequests = new ArrayList<>();
+
 
     @RequiresApi(api = VERSION_CODES.O)
     public static void createNotificationChannel(Context context, String id, CharSequence name) {
@@ -74,7 +77,31 @@ public class DownloaderService extends Service {
         }
     }
 
-    // String title, String downloadLink, String response, File dir
+    private void checkTask() {
+        File[] directories = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).listFiles(File::isDirectory);
+        if (directories == null) return;
+        for (File dir : directories) {
+            File database = new File(dir, "data.db");
+            String dbName = database.getAbsolutePath();
+            TaskDatabase db = Room.databaseBuilder(getApplicationContext(), TaskDatabase.class, dbName).build();
+            TaskInfo taskInfo = db.taskInfoDao().getAll().get(0);
+            if (taskInfo.status == 5) {
+                continue;
+            }
+            DownloaderRequest downloaderRequest = new DownloaderRequest(db, this);
+            for (int i = 0; i < mDownloaderRequests.size(); i++) {
+                if (mDownloaderRequests.get(i).getTaskInfo().fileName.equals(taskInfo.fileName)) {
+                    return;
+                }
+            }
+            synchronized (this) {
+                mDownloaderRequests.add(downloaderRequest);
+            }
+            mExecutorService.submit(downloaderRequest);
+        }
+
+    }
+
     private void createDatabase(DatabaseParameter databaseParameter) {
         File database = new File(databaseParameter.dir, "data.db");
         if (database.exists()) {
@@ -87,6 +114,9 @@ public class DownloaderService extends Service {
         TaskInfo taskInfo = new TaskInfo();
         taskInfo.segmentSize = tasks.size();
         taskInfo.uri = databaseParameter.downloadLink;
+        taskInfo.fileName = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
+                Shared.getValidFileName(databaseParameter.title) + ".mp4").getAbsolutePath();
+        taskInfo.directory = databaseParameter.dir.getAbsolutePath();
         db.taskInfoDao().insertAll(taskInfo);
     }
 
@@ -105,10 +135,6 @@ public class DownloaderService extends Service {
             throw new NullPointerException();
         }
         File dir = createDirectory(response);
-        File database = new File(dir, "data.db");
-        if (database.exists()) {
-            return;
-        }
         createDatabase(new DatabaseParameter(info.first, info.second, response, dir));
     }
 
@@ -170,6 +196,10 @@ public class DownloaderService extends Service {
     }
 
     @Override
+    public void onProgress(DownloaderRequest downloaderRequest) {
+    }
+
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String videoAddress = intent.getStringExtra(EXTRA_VIDEO_ADDRESS);
         new Thread(() -> {
@@ -181,12 +211,12 @@ public class DownloaderService extends Service {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                checkTask();
             }
-
-
         }).start();
         return super.onStartCommand(intent, flags, startId);
     }
+
 
     private static class DatabaseParameter {
         public String title;
