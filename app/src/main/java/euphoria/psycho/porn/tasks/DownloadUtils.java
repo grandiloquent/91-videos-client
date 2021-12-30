@@ -18,6 +18,17 @@ import androidx.annotation.RequiresApi;
 import euphoria.psycho.porn.Shared;
 
 public class DownloadUtils {
+    public static void background(Callable<Void> callable) {
+        new Thread(() -> {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            try {
+                callable.call();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
     @RequiresApi(api = VERSION_CODES.O)
     public static void createNotificationChannel(Context context, String id, CharSequence name) {
         NotificationChannel channel = new NotificationChannel(id, name, NotificationManager.IMPORTANCE_LOW);
@@ -44,16 +55,5 @@ public class DownloadUtils {
         } else {
             return null;
         }
-    }
-
-    public static void background(Callable<Void> callable) {
-        new Thread(() -> {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-            try {
-                callable.call();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).start();
     }
 }
