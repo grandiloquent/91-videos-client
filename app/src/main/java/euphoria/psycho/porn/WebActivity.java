@@ -85,7 +85,7 @@ public class WebActivity extends AppCompatActivity {
 
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                Log.e("B5aOx2", String.format("onConsoleMessage, %s", consoleMessage.message()));
+                //Log.e("B5aOx2", String.format("onConsoleMessage, %s", consoleMessage.message()));
                 return super.onConsoleMessage(consoleMessage);
             }
 
@@ -184,6 +184,7 @@ public class WebActivity extends AppCompatActivity {
                     try {
                         JSONArray jsonArray = new JSONArray();
                         jsonArray.put(finalVideoUris[1]);
+                        jsonArray.put(uri);
                         obj.put("title", finalVideoUris[0]);
                         obj.put("videos", jsonArray);
                     } catch (JSONException e) {

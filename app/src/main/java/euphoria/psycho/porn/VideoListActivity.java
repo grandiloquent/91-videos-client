@@ -30,6 +30,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import euphoria.psycho.porn.Shared.Listener;
 
 // FileListActivity
 public class VideoListActivity extends AppCompatActivity {
@@ -105,6 +106,13 @@ public class VideoListActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (mDirectory != null)
+            loadFolder();
+    }
+
+    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_selector) {
             Intent starter = new Intent(this, FileListActivity.class);
@@ -146,6 +154,15 @@ public class VideoListActivity extends AppCompatActivity {
                     .putString(SettingsFragment.KEY_VIDEO_FOLDER, mDirectory)
                     .apply();
             loadFolder();
+        } else if (item.getItemId() == R.id.action_create_directory) {
+            Shared.openTextContentDialog(this, "创建目录", new Listener() {
+                @Override
+                public void onSuccess(String value) {
+                    File dir = new File(mDirectory, value.trim());
+                    if (!dir.isDirectory())
+                        dir.mkdir();
+                }
+            });
         }
         return super.onOptionsItemSelected(item);
     }

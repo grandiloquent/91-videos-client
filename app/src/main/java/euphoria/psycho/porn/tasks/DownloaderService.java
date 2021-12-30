@@ -11,6 +11,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Process;
+import android.util.Log;
 import android.util.Pair;
 
 import java.io.File;
@@ -53,11 +54,14 @@ public class DownloaderService extends Service implements RequestListener {
                 continue;
             }
             DownloaderRequest downloaderRequest = new DownloaderRequest(db, this);
+            boolean found = false;
             for (int i = 0; i < mRequests.size(); i++) {
                 if (mRequests.get(i).getTaskInfo().fileName.equals(taskInfo.fileName)) {
-                    return;
+                    found = true;
+                    break;
                 }
             }
+            if (found) continue;
             synchronized (this) {
                 mRequests.add(downloaderRequest);
             }
