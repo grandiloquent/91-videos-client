@@ -1079,6 +1079,16 @@ public class Shared {
         }
     }
 
+
+    public static String substring(String string, String first, String second) {
+        int start = string.indexOf(first);
+        if (start == -1) return null;
+        start += first.length();
+        int end = string.indexOf(second, start);
+        if (end == -1) return null;
+        return string.substring(start, end);
+    }
+
     public static String substringAfter(String string, char delimiter) {
         int index = string.indexOf(delimiter);
         if (index != -1) return string.substring(index + 1);

@@ -11,6 +11,9 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -110,6 +113,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     public boolean onQueryTextSubmit(String query) {
+        // https://v.douyin.com/8kSH3tK
+        if (Utils.getDouYinVideo(this, query)) {
+            return true;
+        }
+        if (Utils.getKuaiShouVideo(this, query)) {
+            return true;
+        }
         mWebView.loadUrl(query);
         return true;
     }
