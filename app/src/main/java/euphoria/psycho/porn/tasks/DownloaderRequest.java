@@ -13,6 +13,7 @@ import java.util.List;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Process;
+import android.util.Log;
 
 import euphoria.psycho.porn.Shared;
 
@@ -114,11 +115,12 @@ public class DownloaderRequest implements Runnable {
                 }
                 if (VERSION.SDK_INT >= VERSION_CODES.N) {
                     task.totalSize = c.getContentLengthLong();
+                    mTaskDatabase.taskDao().updateTotalSize(task.uid, task.totalSize);
                 } else {
                     try {
                         task.totalSize = Long.parseLong(c.getHeaderField("Content-Length"));
                         mTaskDatabase.taskDao().updateTotalSize(task.uid, task.totalSize);
-                    } catch (Exception e) {
+                    } catch (Exception ignored) {
                     }
                 }
                 emitSynchronizationEvent(STATUS_CONTENT_LENGTH);

@@ -5,7 +5,7 @@
     <item
         android:id="@+id/action_selector"
         android:icon="@drawable/ic_action_folder_open"
-        android:title="选择文件夹"
+        android:title="@string/select_folder"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_bookmark"
@@ -21,5 +21,9 @@
         android:id="@+id/action_favorite_border"
         android:icon="@drawable/ic_action_favorite_border"
         android:title="取消收藏"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_video"
+        android:title="默认视频目录"
         app:showAsAction="never" />
 </menu>

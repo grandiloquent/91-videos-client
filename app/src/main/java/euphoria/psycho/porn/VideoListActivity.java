@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -39,7 +40,7 @@ public class VideoListActivity extends AppCompatActivity {
 
     private void initialize() {
         mDirectory = PreferenceManager.getDefaultSharedPreferences(this)
-                .getString(SettingsFragment.KEY_VIDEO_FOLDER, "/storage/emulated/0/Download/TikTokVids");
+                .getString(SettingsFragment.KEY_VIDEO_FOLDER, getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath());
         mVideoItemAdapter.setDirectory(mDirectory);
         loadFolder();
     }
@@ -138,9 +139,17 @@ public class VideoListActivity extends AppCompatActivity {
             dialog.show();
         } else if (item.getItemId() == android.R.id.home) {
             finish();
+        } else if (item.getItemId() == R.id.action_video) {
+            mDirectory = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
+            PreferenceManager.getDefaultSharedPreferences(this)
+                    .edit()
+                    .putString(SettingsFragment.KEY_VIDEO_FOLDER, mDirectory)
+                    .apply();
+            loadFolder();
         }
         return super.onOptionsItemSelected(item);
     }
+
     public static class SpacesItemDecoration extends RecyclerView.ItemDecoration {
         private int space;
 

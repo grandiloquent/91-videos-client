@@ -58,7 +58,7 @@ public class WebActivity extends AppCompatActivity {
                 if (videoUri == null) {
                     return;
                 }
-                javaInterface.parse(videoUri);
+                javaInterface.parse(videoUri,getIntent().getStringExtra("id"));
             }
 
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
@@ -85,6 +85,7 @@ public class WebActivity extends AppCompatActivity {
 
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+                Log.e("B5aOx2", String.format("onConsoleMessage, %s", consoleMessage.message()));
                 return super.onConsoleMessage(consoleMessage);
             }
 
@@ -151,18 +152,17 @@ public class WebActivity extends AppCompatActivity {
             Intent starter = new Intent(WebActivity.this, DownloaderService.class);
             starter.putExtra(DownloaderService.EXTRA_VIDEO_ADDRESS, videoUri);
             WebActivity.this.startService(starter);
-            Toast.makeText(WebActivity.this, "添加新任务：" + title, Toast.LENGTH_LONG).show();
+            Toast.makeText(WebActivity.this, "添加新任务：" + title, Toast.LENGTH_SHORT).show();
         }
 
         @JavascriptInterface
-        public void parse(String uri) {
+        public void parse(String uri,String id) {
             new Thread(() -> {
                 Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
                 String[] videoUris = null;
                 Pair<String, String> results;
                 if (uri.contains("91porn.com")) {
                     results = process91Porn(uri);
-                    Log.e("B5aOx2", String.format("parse, %s", results.second));
                 } else {
                     results = processCk(WebActivity.this, uri);
                 }
@@ -189,7 +189,7 @@ public class WebActivity extends AppCompatActivity {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    mWebView.evaluateJavascript("start('" + obj.toString() + "')", null);
+                    mWebView.evaluateJavascript("start('" + obj.toString() +"',"+id+ ")", null);
                 });
             }).start();
         }

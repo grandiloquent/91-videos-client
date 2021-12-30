@@ -1,11 +1,9 @@
 package euphoria.psycho.porn.tasks;
 
-import android.app.NotificationChannel;
+import android.app.Notification.Builder;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.ProgressDialog;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
@@ -13,36 +11,22 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Process;
+import android.util.Pair;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.room.Room;
 import euphoria.psycho.porn.Native;
 import euphoria.psycho.porn.R;
 import euphoria.psycho.porn.Shared;
 import euphoria.psycho.porn.WebActivity;
-
-import android.app.Notification.Builder;
-import android.app.Notification.Builder;
-import android.telephony.mbms.DownloadRequest;
-import android.util.Log;
-import android.util.Pair;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import static euphoria.psycho.porn.Shared.USER_AGENT;
 import static euphoria.psycho.porn.tasks.DownloadUtils.background;
@@ -53,9 +37,8 @@ public class DownloaderService extends Service implements RequestListener {
     public static final String EXTRA_VIDEO_ADDRESS = "video_address";
     private final Handler mHandler = new Handler();
     private NotificationManager mNotificationManager;
-    private ExecutorService mExecutorService = Executors.newFixedThreadPool(3);
-    private List<DownloaderRequest> mDownloaderRequests = new ArrayList<>();
-
+    private ExecutorService mExecutor = Executors.newFixedThreadPool(3);
+    private List<DownloaderRequest> mRequests = new ArrayList<>();
 
     private void checkTask() {
         File[] directories = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).listFiles(File::isDirectory);
@@ -70,22 +53,22 @@ public class DownloaderService extends Service implements RequestListener {
                 continue;
             }
             DownloaderRequest downloaderRequest = new DownloaderRequest(db, this);
-            for (int i = 0; i < mDownloaderRequests.size(); i++) {
-                if (mDownloaderRequests.get(i).getTaskInfo().fileName.equals(taskInfo.fileName)) {
+            for (int i = 0; i < mRequests.size(); i++) {
+                if (mRequests.get(i).getTaskInfo().fileName.equals(taskInfo.fileName)) {
                     return;
                 }
             }
             synchronized (this) {
-                mDownloaderRequests.add(downloaderRequest);
+                mRequests.add(downloaderRequest);
             }
-            mExecutorService.submit(downloaderRequest);
+            mExecutor.submit(downloaderRequest);
         }
-        if (mDownloaderRequests.size() == 0) {
+        if (mRequests.size() == 0) {
             mNotificationManager.cancel(1);
             stopSelf();
             return;
         }
-        showNotification(getString(R.string.downloading_video, 1, mDownloaderRequests.size()));
+        mHandler.post(() -> showNotification(getString(R.string.downloading_video, mRequests.size())));
 
     }
 
@@ -190,16 +173,25 @@ public class DownloaderService extends Service implements RequestListener {
     }
 
     @Override
-    public void onProgress(DownloaderRequest downloaderRequest) {
-        int status = downloaderRequest.getStatus();
+    public void onProgress(DownloaderRequest rquest) {
+        int status = rquest.getStatus();
         if (status == 5 || status < 0) {
-            downloaderRequest
+            rquest
                     .getTaskDatabase()
-                    .taskInfoDao().updateStatus(downloaderRequest.getTaskInfo().uid, downloaderRequest.getStatus());
+                    .taskInfoDao()
+                    .updateStatus(rquest.getTaskInfo().uid, rquest.getStatus());
+            if (status == 5) {
+                Native.removeDirectory(rquest.getTaskInfo().directory);
+            }
+            synchronized (this) {
+                for (int i = 0; i < mRequests.size(); i++) {
+                    if (mRequests.get(i).getTaskInfo().fileName.equals(rquest.getTaskInfo().fileName)) {
+                        mRequests.remove(i);
+                    }
+                }
+            }
+            mHandler.post(() -> showNotification(getString(R.string.downloading_video, mRequests.size())));
         }
-        Log.e("B5aOx2", String.format("onProgress,%s %s",
-                downloaderRequest.getTaskInfo().fileName
-                , downloaderRequest.getStatus()));
     }
 
     @Override
