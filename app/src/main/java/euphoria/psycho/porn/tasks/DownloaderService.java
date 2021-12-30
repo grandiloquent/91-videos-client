@@ -3,6 +3,7 @@ package euphoria.psycho.porn.tasks;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -16,8 +17,10 @@ import android.os.Process;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -28,6 +31,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.room.Room;
 import euphoria.psycho.porn.Native;
+import euphoria.psycho.porn.R;
 import euphoria.psycho.porn.Shared;
 import euphoria.psycho.porn.WebActivity;
 
@@ -40,6 +44,10 @@ import android.util.Pair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static euphoria.psycho.porn.Shared.USER_AGENT;
+import static euphoria.psycho.porn.tasks.DownloadUtils.background;
+import static euphoria.psycho.porn.tasks.DownloadUtils.createNotificationChannel;
+
 public class DownloaderService extends Service implements RequestListener {
     public static final String DOWNLOAD_VIDEO = "DOWNLOAD_VIDEO";
     public static final String EXTRA_VIDEO_ADDRESS = "video_address";
@@ -49,34 +57,6 @@ public class DownloaderService extends Service implements RequestListener {
     private List<DownloaderRequest> mDownloaderRequests = new ArrayList<>();
 
 
-    @RequiresApi(api = VERSION_CODES.O)
-    public static void createNotificationChannel(Context context, String id, CharSequence name) {
-        NotificationChannel channel = new NotificationChannel(id, name, NotificationManager.IMPORTANCE_LOW);
-        context.getSystemService(NotificationManager.class)
-                .createNotificationChannel(channel);
-    }
-
-    private static String getString(String uri) throws IOException {
-        URL url = new URL(uri);
-        HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
-        SSLContext sc;
-        try {
-            sc = SSLContext.getInstance("TLSv1.2");
-            sc.init(null, null, new java.security.SecureRandom());
-            sc.createSSLEngine();
-            urlConnection.setSSLSocketFactory(sc.getSocketFactory());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36");
-        int code = urlConnection.getResponseCode();
-        if (code < 400 && code >= 200) {
-            return Shared.readString(urlConnection);
-        } else {
-            return null;
-        }
-    }
-
     private void checkTask() {
         File[] directories = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).listFiles(File::isDirectory);
         if (directories == null) return;
@@ -85,7 +65,8 @@ public class DownloaderService extends Service implements RequestListener {
             String dbName = database.getAbsolutePath();
             TaskDatabase db = Room.databaseBuilder(getApplicationContext(), TaskDatabase.class, dbName).build();
             TaskInfo taskInfo = db.taskInfoDao().getAll().get(0);
-            if (taskInfo.status == 5) {
+            if (taskInfo.status == 5 || new File(taskInfo.fileName).exists()) {
+                Native.removeDirectory(taskInfo.directory);
                 continue;
             }
             DownloaderRequest downloaderRequest = new DownloaderRequest(db, this);
@@ -99,7 +80,20 @@ public class DownloaderService extends Service implements RequestListener {
             }
             mExecutorService.submit(downloaderRequest);
         }
+        if (mDownloaderRequests.size() == 0) {
+            mNotificationManager.cancel(1);
+            stopSelf();
+            return;
+        }
+        showNotification(getString(R.string.downloading_video, 1, mDownloaderRequests.size()));
 
+    }
+
+    private void checkUncompletedTasks() {
+        background(() -> {
+            checkTask();
+            return null;
+        });
     }
 
     private void createDatabase(DatabaseParameter databaseParameter) {
@@ -130,7 +124,7 @@ public class DownloaderService extends Service implements RequestListener {
     }
 
     private void createTask(Pair<String, String> info) throws IOException {
-        String response = getString(info.second);
+        String response = DownloadUtils.getString(info.second);
         if (response == null) {
             throw new NullPointerException();
         }
@@ -189,23 +183,41 @@ public class DownloaderService extends Service implements RequestListener {
     public void onCreate() {
         super.onCreate();
         if (VERSION.SDK_INT >= VERSION_CODES.O) {
-            createNotificationChannel(this, DOWNLOAD_VIDEO, "下载视频频道");
+            createNotificationChannel(this, DOWNLOAD_VIDEO, getString(R.string.download_video_channel));
         }
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        showNotification("下载");
+        showNotification(getString(R.string.download));
     }
 
     @Override
     public void onProgress(DownloaderRequest downloaderRequest) {
+        int status = downloaderRequest.getStatus();
+        if (status == 5 || status < 0) {
+            downloaderRequest
+                    .getTaskDatabase()
+                    .taskInfoDao().updateStatus(downloaderRequest.getTaskInfo().uid, downloaderRequest.getStatus());
+        }
+        Log.e("B5aOx2", String.format("onProgress,%s %s",
+                downloaderRequest.getTaskInfo().fileName
+                , downloaderRequest.getStatus()));
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String videoAddress = intent.getStringExtra(EXTRA_VIDEO_ADDRESS);
+        if (videoAddress == null) {
+            checkUncompletedTasks();
+            return super.onStartCommand(intent, flags, startId);
+        }
         new Thread(() -> {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
             Pair<String, String> info = getVideoInformation(videoAddress);
             if (info != null) {
+                if (info.second.contains(".mp4")) {
+                    Shared.downloadFile(this,
+                            (info.first == null ? Shared.toHex(info.second.getBytes(StandardCharsets.UTF_8)) : info.first) + ".mp4", info.second, USER_AGENT);
+                    return;
+                }
                 try {
                     createTask(info);
                 } catch (IOException e) {

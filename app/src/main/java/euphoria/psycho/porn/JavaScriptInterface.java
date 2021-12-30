@@ -30,13 +30,15 @@ public class JavaScriptInterface {
 
     @JavascriptInterface
     public void download(String uri, String title) {
-        if (uri.contains("m3u8")) {
+//        if (uri.contains("m3u8")) {
             Intent starter = new Intent(mActivity, DownloaderService.class);
             starter.putExtra(DownloaderService.EXTRA_VIDEO_ADDRESS, uri);
             mActivity.startService(starter);
-        } else {
-            Shared.downloadFile(mActivity, (title == null ? Shared.toHex(uri.getBytes(StandardCharsets.UTF_8)) : title) + ".mp4", uri, USER_AGENT);
-        }
+//        } else {
+//            Shared.downloadFile(mActivity, (title == null ? Shared.toHex(uri.getBytes(StandardCharsets.UTF_8)) : title) + ".mp4", uri, USER_AGENT);
+//        }
+        Toast.makeText(mActivity, "添加新任务：" + title, Toast.LENGTH_LONG).show();
+
     }
 
 }

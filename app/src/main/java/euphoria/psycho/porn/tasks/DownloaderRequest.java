@@ -37,6 +37,7 @@ public class DownloaderRequest implements Runnable {
     private int mStatus;
     private List<Task> mTasks;
     private String mDirectory;
+    private TaskDatabase mTaskDatabase;
 
     public DownloaderRequest(TaskDatabase taskDatabase, RequestListener listener) {
         mTaskInfo = taskDatabase.taskInfoDao().getAll().get(0);
@@ -44,10 +45,20 @@ public class DownloaderRequest implements Runnable {
         mListener = listener;
         mBaseUri = Shared.substringBeforeLast(mTaskInfo.uri, "/") + "/";
         mDirectory = new File(mTaskInfo.directory).getAbsolutePath();
+        mTaskDatabase = taskDatabase;
+
     }
 
     public int getStatus() {
         return mStatus;
+    }
+
+    public TaskDatabase getTaskDatabase() {
+        return mTaskDatabase;
+    }
+
+    public TaskInfo getTaskInfo() {
+        return mTaskInfo;
     }
 
     public boolean isPaused() {
@@ -70,10 +81,6 @@ public class DownloaderRequest implements Runnable {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
-
-    public TaskInfo getTaskInfo() {
-        return mTaskInfo;
     }
 
     @Override
@@ -110,6 +117,7 @@ public class DownloaderRequest implements Runnable {
                 } else {
                     try {
                         task.totalSize = Long.parseLong(c.getHeaderField("Content-Length"));
+                        mTaskDatabase.taskDao().updateTotalSize(task.uid, task.totalSize);
                     } catch (Exception e) {
                     }
                 }
@@ -176,5 +184,7 @@ public class DownloaderRequest implements Runnable {
             emitSynchronizationEvent(STATUS_MERGE_FAILED);
         }
 
+
     }
+
 }

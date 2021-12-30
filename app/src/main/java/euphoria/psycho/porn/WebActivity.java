@@ -148,13 +148,10 @@ public class WebActivity extends AppCompatActivity {
     private class JavaInterface {
         @JavascriptInterface
         public void download(String videoUri, String title) {
-            if (videoUri.contains("m3u8")) {
-                Intent starter = new Intent(WebActivity.this, DownloaderService.class);
-                starter.putExtra(DownloaderService.EXTRA_VIDEO_ADDRESS, videoUri);
-                WebActivity.this.startService(starter);
-            } else {
-                Shared.downloadFile(WebActivity.this, (title == null ? Shared.toHex(videoUri.getBytes(StandardCharsets.UTF_8)) : title) + ".mp4", videoUri, USER_AGENT);
-            }
+            Intent starter = new Intent(WebActivity.this, DownloaderService.class);
+            starter.putExtra(DownloaderService.EXTRA_VIDEO_ADDRESS, videoUri);
+            WebActivity.this.startService(starter);
+            Toast.makeText(WebActivity.this, "添加新任务：" + title, Toast.LENGTH_LONG).show();
         }
 
         @JavascriptInterface
@@ -165,6 +162,7 @@ public class WebActivity extends AppCompatActivity {
                 Pair<String, String> results;
                 if (uri.contains("91porn.com")) {
                     results = process91Porn(uri);
+                    Log.e("B5aOx2", String.format("parse, %s", results.second));
                 } else {
                     results = processCk(WebActivity.this, uri);
                 }

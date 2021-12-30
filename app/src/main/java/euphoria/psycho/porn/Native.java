@@ -9,4 +9,5 @@ public class Native {
 
     public native static String fetchCk(String url, String cookie, String userAgent);
 
+    public native static void removeDirectory(String directory);
 }

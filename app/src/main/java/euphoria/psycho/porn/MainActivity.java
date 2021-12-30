@@ -67,12 +67,14 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         setUpWebComponents();
         setUpJavascriptInterface();
         setUpCookie();
-         if(SettingsFragment.getString(this, SettingsFragment.KEY_USER_AGENT, null)==null){
+        if (SettingsFragment.getString(this, SettingsFragment.KEY_USER_AGENT, null) == null) {
             String ua = new WebView(this).getSettings().getUserAgentString();
             SettingsFragment.setString(this, SettingsFragment.KEY_USER_AGENT, ua);
         }
         mWebView.loadUrl("http://47.106.105.122");
         //start(this, "http://937ck.us/vodplay/16302-1-1.html");
+        startService(new Intent(this, DownloaderService.class));
+
     }
 
     public static void start(Context context, String videoAddress) {

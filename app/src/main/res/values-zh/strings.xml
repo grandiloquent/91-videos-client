@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">秘密花园</string>
+    <string name="download">下载</string>
+    <string name="download_video_channel">下载视频频道</string>
+    <string name="downloading_video">正在 %1$d/ %2$d 下载视频</string>
 </resources>
