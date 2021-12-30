@@ -2,6 +2,10 @@
 
 一个为小伙伴谋福利的程序。
 
+## 下载地址
+
+- https://github.com/grandiloquent/91porn-client/releases
+
 ## 问题
 
 如果视频无法解析，可能有如下几种原因：
