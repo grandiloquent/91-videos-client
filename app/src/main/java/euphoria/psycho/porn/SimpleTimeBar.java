@@ -17,8 +17,6 @@ import android.view.ViewParent;
 
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import androidx.annotation.ColorInt;
-import androidx.annotation.Nullable;
 
 public class SimpleTimeBar extends View implements TimeBar {
     
@@ -176,27 +174,27 @@ public class SimpleTimeBar extends View implements TimeBar {
         keyCountIncrement = DEFAULT_INCREMENT_COUNT;
         setFocusable(true);
     }
-    public void setPlayedColor(@ColorInt int playedColor) {
+    public void setPlayedColor( int playedColor) {
         playedPaint.setColor(playedColor);
         invalidate(seekBounds);
     }
-    public void setScrubberColor(@ColorInt int scrubberColor) {
+    public void setScrubberColor( int scrubberColor) {
         scrubberPaint.setColor(scrubberColor);
         invalidate(seekBounds);
     }
-    public void setBufferedColor(@ColorInt int bufferedColor) {
+    public void setBufferedColor( int bufferedColor) {
         bufferedPaint.setColor(bufferedColor);
         invalidate(seekBounds);
     }
-    public void setUnplayedColor(@ColorInt int unplayedColor) {
+    public void setUnplayedColor( int unplayedColor) {
         unplayedPaint.setColor(unplayedColor);
         invalidate(seekBounds);
     }
-    public void setAdMarkerColor(@ColorInt int adMarkerColor) {
+    public void setAdMarkerColor( int adMarkerColor) {
         adMarkerPaint.setColor(adMarkerColor);
         invalidate(seekBounds);
     }
-    public void setPlayedAdMarkerColor(@ColorInt int playedAdMarkerColor) {
+    public void setPlayedAdMarkerColor( int playedAdMarkerColor) {
         playedAdMarkerPaint.setColor(playedAdMarkerColor);
         invalidate(seekBounds);
     }
@@ -244,7 +242,7 @@ public class SimpleTimeBar extends View implements TimeBar {
     }
 
     @Override
-    public void setAdGroupTimesMs(@Nullable long[] adGroupTimesMs, @Nullable boolean[] playedAdGroups,
+    public void setAdGroupTimesMs( long[] adGroupTimesMs,  boolean[] playedAdGroups,
                                   int adGroupCount) {
         this.adGroupCount = adGroupCount;
         this.adGroupTimesMs = adGroupTimesMs;

@@ -5,6 +5,5 @@
     <item
         android:id="@+id/action_check"
         android:icon="@drawable/ic_action_check"
-        android:title="确定"
-        app:showAsAction="ifRoom" />
+        android:title="确定"/>
 </menu>

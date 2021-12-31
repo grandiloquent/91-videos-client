@@ -1,6 +1,7 @@
 package euphoria.psycho.porn;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -19,6 +20,7 @@ import android.webkit.CookieManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.PopupWindow;
+import android.widget.SearchView;
 
 
 import java.io.IOException;
@@ -27,16 +29,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import euphoria.psycho.porn.tasks.DownloaderService;
 
 import static euphoria.psycho.porn.Shared.requestStoragePremissions;
 
-public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
+public class MainActivity extends Activity implements SearchView.OnQueryTextListener {
 
     private WebView mWebView;
     private BottomSheetLayout mRoot;
@@ -107,31 +104,32 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_menu) {
-            RecyclerView recyclerView = (RecyclerView) LayoutInflater.from(this).inflate(R.layout.modal_bottom_sheet_content, null);
-            recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-            List<BottomSheetItem> bottomSheetItems = new ArrayList<>();
-            bottomSheetItems.add(getVideoListItem());
-            bottomSheetItems.add(getSettingsItem());
-            BottomSheetItemAdapter ba = new BottomSheetItemAdapter(this, bottomSheetItems);
-            recyclerView.setAdapter(ba);
-            mRoot.showWithSheetView(recyclerView);
-
-        } else if (item.getItemId() == R.id.action_refresh) {
-            mWebView.clearCache(true);
-            mWebView.reload();
-        }
-        return super.onOptionsItemSelected(item);
+    public boolean onOptionsItemSelected( MenuItem item) {
+//        if (item.getItemId() == R.id.action_menu) {
+//            RecyclerView recyclerView = (RecyclerView) LayoutInflater.from(this).inflate(R.layout.modal_bottom_sheet_content, null);
+//            recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+//            List<BottomSheetItem> bottomSheetItems = new ArrayList<>();
+//            bottomSheetItems.add(getVideoListItem());
+//            bottomSheetItems.add(getSettingsItem());
+//            BottomSheetItemAdapter ba = new BottomSheetItemAdapter(this, bottomSheetItems);
+//            recyclerView.setAdapter(ba);
+//            mRoot.showWithSheetView(recyclerView);
+//
+//        } else if (item.getItemId() == R.id.action_refresh) {
+//            mWebView.clearCache(true);
+//            mWebView.reload();
+//        }
+//        return super.onOptionsItemSelected(item);
+        return  true;
     }
 
     private BottomSheetItem getVideoListItem() {
         BottomSheetItem bottomSheetItem = new BottomSheetItem();
         bottomSheetItem.icon = R.drawable.ic_action_playlist_play;
         bottomSheetItem.title = "视频";
-        bottomSheetItem.listener = (view1, position) -> {
-            startVideoList(this);
-        };
+//        bottomSheetItem.listener = (view1, position) -> {
+//            startVideoList(this);
+//        };
         return bottomSheetItem;
     }
 
@@ -139,11 +137,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         BottomSheetItem bottomSheetItem = new BottomSheetItem();
         bottomSheetItem.icon = R.drawable.ic_action_settings;
         bottomSheetItem.title = "设置";
-        bottomSheetItem.listener = (view1, position) -> {
-            Intent starter = new Intent(this, SettingsActivity.class);
-            startActivity(starter);
-
-        };
+//        bottomSheetItem.listener = (view1, position) -> {
+//            Intent starter = new Intent(this, SettingsActivity.class);
+//            startActivity(starter);
+//
+//        };
         return bottomSheetItem;
     }
 

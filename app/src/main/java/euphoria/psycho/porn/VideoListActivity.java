@@ -1,6 +1,7 @@
 package euphoria.psycho.porn;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
@@ -21,10 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.RecyclerView;
 import euphoria.psycho.porn.Shared.Listener;
 
 // FileListActivity
@@ -75,13 +72,13 @@ public class VideoListActivity extends Activity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode,  Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         initialize();
     }
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate( Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.video_list_activity);
@@ -111,7 +108,7 @@ public class VideoListActivity extends Activity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onOptionsItemSelected( MenuItem item) {
         if (item.getItemId() == R.id.action_selector) {
             Intent starter = new Intent(this, FileListActivity.class);
             startActivityForResult(starter, 0);
@@ -164,23 +161,6 @@ public class VideoListActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    public static class SpacesItemDecoration extends RecyclerView.ItemDecoration {
-        private int space;
 
-        public SpacesItemDecoration(int space) {
-            this.space = space;
-        }
-
-        @Override
-        public void getItemOffsets(Rect outRect, View view,
-                                   RecyclerView parent, RecyclerView.State state) {
-            outRect.left = space;
-            outRect.right = space;
-            outRect.bottom = space;
-            // Add top margin only for the first item to avoid double space between items
-            if (parent.getChildPosition(view) == 0)
-                outRect.top = space;
-        }
-    }
 
 }

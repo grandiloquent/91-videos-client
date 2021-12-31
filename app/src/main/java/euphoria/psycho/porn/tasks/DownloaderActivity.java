@@ -1,5 +1,6 @@
 package euphoria.psycho.porn.tasks;
 
+import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -18,19 +19,15 @@ import java.util.logging.Logger;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.RecyclerView;
 import euphoria.psycho.porn.R;
 import euphoria.psycho.porn.Shared;
 
-public class DownloaderActivity extends AppCompatActivity {
-    private RecyclerView mRoot;
+public class DownloaderActivity extends Activity {
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate( Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mRoot = findViewById(R.id.root);
+        //mRoot = findViewById(R.id.root);
         start(this, "https://la.killcovid2021.com//m3u8/565321/565321.m3u8?st=xT7fMkFrXyxtTh0-X7gO8Q&e=1640675341");
     }
 

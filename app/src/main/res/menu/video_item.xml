@@ -5,6 +5,5 @@
     <item
         android:id="@+id/action_send"
         android:icon="@android:drawable/arrow_down_float"
-        android:title="发送"
-        app:showAsAction="ifRoom" />
+        android:title="发送"/>
 </menu>

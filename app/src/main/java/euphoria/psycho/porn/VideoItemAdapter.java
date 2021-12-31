@@ -21,8 +21,6 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.util.Util;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -32,8 +30,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 import euphoria.psycho.porn.VideoItemAdapter.ViewHolder;
 
 public class VideoItemAdapter extends BaseAdapter {

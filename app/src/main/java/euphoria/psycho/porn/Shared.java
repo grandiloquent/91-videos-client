@@ -94,9 +94,6 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import androidx.annotation.VisibleForTesting;
-import androidx.core.graphics.drawable.RoundedBitmapDrawable;
-import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 
 import static android.content.Context.DOWNLOAD_SERVICE;
 import static java.lang.Math.max;
@@ -410,20 +407,13 @@ public class Shared {
         return complete.digest();
     }
 
-    /**
-     * Creates a {@link RoundedBitmapDrawable} using the provided {@link Bitmap} and cornerRadius.
-     *
-     * @param resources    The {@link Resources}.
-     * @param icon         The {@link Bitmap} to round.
-     * @param cornerRadius The corner radius.
-     * @return A {@link RoundedBitmapDrawable} for the provided {@link Bitmap}.
-     */
-    public static RoundedBitmapDrawable createRoundedBitmapDrawable(
-            Resources resources, Bitmap icon, int cornerRadius) {
-        RoundedBitmapDrawable roundedIcon = RoundedBitmapDrawableFactory.create(resources, icon);
-        roundedIcon.setCornerRadius(cornerRadius);
-        return roundedIcon;
-    }
+//
+//    public static RoundedBitmapDrawable createRoundedBitmapDrawable(
+//            Resources resources, Bitmap icon, int cornerRadius) {
+//        RoundedBitmapDrawable roundedIcon = RoundedBitmapDrawableFactory.create(resources, icon);
+//        roundedIcon.setCornerRadius(cornerRadius);
+//        return roundedIcon;
+//    }
 
     public static Bitmap createVideoThumbnail(String filePath) {
         // MediaMetadataRetriever is available on API Level 8
@@ -989,7 +979,6 @@ public class Shared {
     /**
      * Resets the cached value, if any.
      */
-    @VisibleForTesting
     public static void resetForTesting() {
         sLowEndDevice = null;
         sAmountOfPhysicalMemoryKB = null;

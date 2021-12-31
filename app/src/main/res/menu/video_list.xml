@@ -5,29 +5,23 @@
     <item
         android:id="@+id/action_selector"
         android:icon="@drawable/ic_action_folder_open"
-        android:title="@string/select_folder"
-        app:showAsAction="ifRoom" />
+        android:title="@string/select_folder" />
     <item
         android:id="@+id/action_bookmark"
         android:icon="@drawable/ic_action_bookmark"
-        android:title="书签"
-        app:showAsAction="ifRoom" />
+        android:title="书签" />
     <item
         android:id="@+id/action_fav"
         android:icon="@drawable/ic_action_favorite"
-        android:title="收藏"
-        app:showAsAction="never" />
+        android:title="收藏" />
     <item
         android:id="@+id/action_favorite_border"
         android:icon="@drawable/ic_action_favorite_border"
-        android:title="取消收藏"
-        app:showAsAction="never" />
+        android:title="取消收藏" />
     <item
         android:id="@+id/action_create_directory"
-        android:title="创建目录"
-        app:showAsAction="never" />
+        android:title="创建目录" />
     <item
         android:id="@+id/action_video"
-        android:title="默认视频目录"
-        app:showAsAction="never" />
+        android:title="默认视频目录" />
 </menu>

@@ -27,7 +27,6 @@ import android.widget.FrameLayout;
 
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import androidx.annotation.NonNull;
 
 public class BottomSheetLayout extends FrameLayout {
 
@@ -118,7 +117,7 @@ public class BottomSheetLayout extends FrameLayout {
      *
      * @param onSheetDismissedListener the listener to be notified.
      */
-    public void addOnSheetDismissedListener(@NonNull OnSheetDismissedListener onSheetDismissedListener) {
+    public void addOnSheetDismissedListener( OnSheetDismissedListener onSheetDismissedListener) {
         checkNotNull(onSheetDismissedListener, "onSheetDismissedListener == null");
         this.onSheetDismissedListeners.add(onSheetDismissedListener);
     }
@@ -130,7 +129,7 @@ public class BottomSheetLayout extends FrameLayout {
      *
      * @param onSheetStateChangeListener the listener to be notified.
      */
-    public void addOnSheetStateChangeListener(@NonNull OnSheetStateChangeListener onSheetStateChangeListener) {
+    public void addOnSheetStateChangeListener( OnSheetStateChangeListener onSheetStateChangeListener) {
         checkNotNull(onSheetStateChangeListener, "onSheetStateChangeListener == null");
         this.onSheetStateChangeListeners.add(onSheetStateChangeListener);
     }
@@ -153,7 +152,7 @@ public class BottomSheetLayout extends FrameLayout {
         anim.setInterpolator(animationInterpolator);
         anim.addListener(new CancelDetectionAnimationListener() {
             @Override
-            public void onAnimationEnd(@NonNull Animator animation) {
+            public void onAnimationEnd( Animator animation) {
                 if (!canceled) {
                     currentAnimator = null;
                 }
@@ -285,7 +284,7 @@ public class BottomSheetLayout extends FrameLayout {
         anim.setInterpolator(animationInterpolator);
         anim.addListener(new CancelDetectionAnimationListener() {
             @Override
-            public void onAnimationEnd(@NonNull Animator animation) {
+            public void onAnimationEnd( Animator animation) {
                 if (!canceled) {
                     currentAnimator = null;
                 }
@@ -311,7 +310,7 @@ public class BottomSheetLayout extends FrameLayout {
      *
      * @param onSheetDismissedListener the listener to be removed.
      */
-    public void removeOnSheetDismissedListener(@NonNull OnSheetDismissedListener onSheetDismissedListener) {
+    public void removeOnSheetDismissedListener( OnSheetDismissedListener onSheetDismissedListener) {
         checkNotNull(onSheetDismissedListener, "onSheetDismissedListener == null");
         this.onSheetDismissedListeners.remove(onSheetDismissedListener);
     }
@@ -321,7 +320,7 @@ public class BottomSheetLayout extends FrameLayout {
      *
      * @param onSheetStateChangeListener the listener to be removed.
      */
-    public void removeOnSheetStateChangeListener(@NonNull OnSheetStateChangeListener onSheetStateChangeListener) {
+    public void removeOnSheetStateChangeListener( OnSheetStateChangeListener onSheetStateChangeListener) {
         checkNotNull(onSheetStateChangeListener, "onSheetStateChangeListener == null");
         this.onSheetStateChangeListeners.remove(onSheetStateChangeListener);
     }
@@ -617,7 +616,7 @@ public class BottomSheetLayout extends FrameLayout {
      * Don't call addView directly, use setContentView() and showWithSheetView()
      */
     @Override
-    public void addView(@NonNull View child) {
+    public void addView( View child) {
         if (getChildCount() > 0) {
             throw new IllegalArgumentException("You may not declare more then one child of bottom sheet. The sheet view must be added dynamically with showWithSheetView()");
         }
@@ -625,26 +624,26 @@ public class BottomSheetLayout extends FrameLayout {
     }
 
     @Override
-    public void addView(@NonNull View child, int index) {
+    public void addView( View child, int index) {
         addView(child);
     }
 
     @Override
-    public void addView(@NonNull View child, int index, @NonNull ViewGroup.LayoutParams params) {
+    public void addView( View child, int index,  ViewGroup.LayoutParams params) {
         addView(child);
     }
 
     @Override
-    public void addView(@NonNull View child, @NonNull ViewGroup.LayoutParams params) {
+    public void addView( View child,  ViewGroup.LayoutParams params) {
         addView(child);
     }
 
     @Override
-    public void addView(@NonNull View child, int width, int height) {
+    public void addView( View child, int width, int height) {
         addView(child);
     }
 
-    public boolean onInterceptTouchEvent(@NonNull MotionEvent ev) {
+    public boolean onInterceptTouchEvent( MotionEvent ev) {
         boolean downAction = ev.getActionMasked() == MotionEvent.ACTION_DOWN;
         if (downAction) {
             hasIntercepted = false;
@@ -658,7 +657,7 @@ public class BottomSheetLayout extends FrameLayout {
     }
 
     @Override
-    public boolean onKeyPreIme(int keyCode, @NonNull KeyEvent event) {
+    public boolean onKeyPreIme(int keyCode,  KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && isSheetShowing()) {
             if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
                 KeyEvent.DispatcherState state = getKeyDispatcherState();
@@ -685,7 +684,7 @@ public class BottomSheetLayout extends FrameLayout {
     }
 
     @Override
-    public boolean onTouchEvent(@NonNull MotionEvent event) {
+    public boolean onTouchEvent( MotionEvent event) {
         if (!isSheetShowing()) {
             return false;
         }

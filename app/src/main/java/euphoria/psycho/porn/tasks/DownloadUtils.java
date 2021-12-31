@@ -14,7 +14,6 @@ import java.util.function.Function;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 
-import androidx.annotation.RequiresApi;
 import euphoria.psycho.porn.Shared;
 
 public class DownloadUtils {
@@ -29,7 +28,6 @@ public class DownloadUtils {
         }).start();
     }
 
-    @RequiresApi(api = VERSION_CODES.O)
     public static void createNotificationChannel(Context context, String id, CharSequence name) {
         NotificationChannel channel = new NotificationChannel(id, name, NotificationManager.IMPORTANCE_LOW);
         context.getSystemService(NotificationManager.class)

@@ -1,5 +1,6 @@
 package euphoria.psycho.porn;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -30,19 +31,17 @@ import java.nio.charset.StandardCharsets;
 
 import android.os.Process;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import euphoria.psycho.porn.tasks.DownloaderService;
 
 import static euphoria.psycho.porn.Shared.USER_AGENT;
 
-public class WebActivity extends AppCompatActivity {
+public class WebActivity extends Activity {
     public static final String EXTRA_VIDEO_URL = "extra_video_url";
     private WebView mWebView;
 
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate( Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.web_activity);
         mWebView = findViewById(R.id.web_view);

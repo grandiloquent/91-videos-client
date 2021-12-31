@@ -10,12 +10,11 @@ import android.database.sqlite.SQLiteOpenHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-import androidx.annotation.Nullable;
 
 public class Database extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
 
-    public Database(@Nullable Context context, @Nullable String name) {
+    public Database( Context context,  String name) {
         super(context, name, null, DATABASE_VERSION);
     }
 

@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import androidx.annotation.Nullable;
 import euphoria.psycho.porn.Native;
 import euphoria.psycho.porn.R;
 import euphoria.psycho.porn.Shared;
@@ -168,7 +167,6 @@ public class DownloaderService extends Service implements RequestListener {
         mNotificationManager.notify(1, builder.build());
     }
 
-    @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;

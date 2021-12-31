@@ -44,15 +44,11 @@ import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.res.ResourcesCompat;
 import euphoria.psycho.porn.TimeBar.OnScrubListener;
 
 import static euphoria.psycho.porn.Shared.getStringForTime;
 
-public class PlayerActivity extends AppCompatActivity implements OnTouchListener {
+public class PlayerActivity extends Activity implements OnTouchListener {
 
     public static final int DEFAULT_HIDE_TIME_DELAY = 5000;
     public static final String KEY_VIDEO_FILE = "VideoFile";
@@ -366,7 +362,7 @@ public class PlayerActivity extends AppCompatActivity implements OnTouchListener
     }
 
     private void play() throws IOException {
-        getSupportActionBar().setTitle(Shared.substringAfterLast(mPlayList.get(mPlayIndex), "/"));
+        //getSupportActionBar().setTitle(Shared.substringAfterLast(mPlayList.get(mPlayIndex), "/"));
         mMediaPlayer.setDataSource(mPlayList.get(mPlayIndex));
         mMediaPlayer.prepareAsync();
     }
@@ -393,7 +389,7 @@ public class PlayerActivity extends AppCompatActivity implements OnTouchListener
     }
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate( Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.player_activity);
         bindingDeleteVideoEvent();
@@ -427,22 +423,22 @@ public class PlayerActivity extends AppCompatActivity implements OnTouchListener
         mDuration = findViewById(R.id.duration);
         mTextureView.setSurfaceTextureListener(new SurfaceTextureListener() {
             @Override
-            public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surface, int width, int height) {
+            public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
                 mSurface = new Surface(surface);
                 initializePlayer();
             }
 
             @Override
-            public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surface) {
+            public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
                 return false;
             }
 
             @Override
-            public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surface, int width, int height) {
+            public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
             }
 
             @Override
-            public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surface) {
+            public void onSurfaceTextureUpdated(SurfaceTexture surface) {
             }
         });
         mTimeBar = findViewById(R.id.timebar);
@@ -467,7 +463,7 @@ public class PlayerActivity extends AppCompatActivity implements OnTouchListener
 
         });
         Button rewWithAmount = findViewById(R.id.exo_rew_with_amount);
-        Typeface typeface = ResourcesCompat.getFont(this, R.font.roboto_medium_numbers);
+        Typeface typeface = getResources().getFont(R.font.roboto_medium_numbers);
         rewWithAmount.setTypeface(typeface);
         rewWithAmount.setText("10");
         rewWithAmount.setOnClickListener(v -> {
