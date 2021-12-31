@@ -89,17 +89,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         //start(this, "http://937ck.us/vodplay/16302-1-1.html");
         startService(new Intent(this, DownloaderService.class));
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-                try {
-                    Log.e("B5aOx2", String.format("run, %s", Utils.getXVideosVideoAddress("https://www.xvideos.com/video67402625/_qq_91yue.cc")[1]));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
     }
 
     public static void start(Context context, String videoAddress) {
