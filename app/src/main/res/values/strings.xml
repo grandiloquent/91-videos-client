@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Secret Garden</string>
-    <string name="download">Download</string>
     <string name="download_video_channel">Download video channel</string>
     <string name="downloading_video">Downloading  %1$d videos</string>
     <string name="select_folder">Select folder</string>

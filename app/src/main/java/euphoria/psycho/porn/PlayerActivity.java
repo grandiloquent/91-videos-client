@@ -1,6 +1,7 @@
 package euphoria.psycho.porn;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -28,7 +29,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -144,7 +144,7 @@ public class PlayerActivity extends AppCompatActivity implements OnTouchListener
 
     private void bindingDeleteVideoEvent() {
         findViewById(R.id.action_file_download)
-                .setOnClickListener(v -> new MaterialAlertDialogBuilder(PlayerActivity.this)
+                .setOnClickListener(v -> new AlertDialog.Builder(PlayerActivity.this)
                         .setTitle("询问")
                         .setMessage("确定要删除当前视频吗？")
                         .setPositiveButton(android.R.string.ok, (dialog, which) -> {

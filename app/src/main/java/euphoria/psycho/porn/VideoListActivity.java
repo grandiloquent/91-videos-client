@@ -12,7 +12,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 
-import com.google.android.material.dialog.MaterialDialogs;
 
 import java.io.File;
 import java.io.FileFilter;

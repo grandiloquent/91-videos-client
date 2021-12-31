@@ -198,10 +198,6 @@ public class DownloaderService extends Service implements RequestListener {
                     }
                 }
             }
-            if (mRequests.size() == 0) {
-                stopSelf();
-                return;
-            }
             if (checkFinished()) return;
             mHandler.post(() -> showNotification(getString(R.string.downloading_video, mRequests.size())));
         }
