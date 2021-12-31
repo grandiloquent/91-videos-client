@@ -967,18 +967,18 @@ public class Shared {
 
     public static void requestStoragePremissions(Activity context) {
         if (VERSION.SDK_INT >= VERSION_CODES.R) {
-            if (!Environment.isExternalStorageManager()) {
-                try {
-                    Uri uri = Uri.parse("package:" + BuildConfig.APPLICATION_ID);
-                    Log.e("B5aOx2", String.format("requestStoragePremissions, %s", uri));
-                    Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri);
-                    context.startActivity(intent);
-                } catch (Exception ex) {
-                    Intent intent = new Intent();
-                    intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-                    context.startActivity(intent);
-                }
-            }
+//            if (!Environment.isExternalStorageManager()) {
+//                try {
+//                    Uri uri = Uri.parse("package:" + BuildConfig.APPLICATION_ID);
+//                    Log.e("B5aOx2", String.format("requestStoragePremissions, %s", uri));
+//                    Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri);
+//                    context.startActivity(intent);
+//                } catch (Exception ex) {
+//                    Intent intent = new Intent();
+//                    intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+//                    context.startActivity(intent);
+//                }
+//            }
         } else {
             if (context.checkSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
                 context.requestPermissions(new String[]{"android.permission.WRITE_EXTERNAL_STORAGE"}, 100);
