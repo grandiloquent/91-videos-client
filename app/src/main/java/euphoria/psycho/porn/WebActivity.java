@@ -25,6 +25,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import android.os.Process;
@@ -58,7 +59,7 @@ public class WebActivity extends AppCompatActivity {
                 if (videoUri == null) {
                     return;
                 }
-                javaInterface.parse(videoUri,getIntent().getStringExtra("id"));
+                javaInterface.parse(videoUri, getIntent().getStringExtra("id"));
             }
 
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
@@ -132,6 +133,19 @@ public class WebActivity extends AppCompatActivity {
         return null;
     }
 
+    public static Pair<String, String> processXVideos(String videoAddress) {
+        String[] response = null;
+        try {
+            response = Utils.getXVideosVideoAddress(videoAddress);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (response == null) {
+            return null;
+        }
+        return Pair.create(response[0], response[1]);
+    }
+
     public static Pair<String, String> processCk(Context context, String videoAddress) {
         String response = Native.fetchCk(videoAddress, SettingsFragment.getString(context,
                 SettingsFragment.KEY_CK_COOKIE, null),
@@ -156,13 +170,15 @@ public class WebActivity extends AppCompatActivity {
         }
 
         @JavascriptInterface
-        public void parse(String uri,String id) {
+        public void parse(String uri, String id) {
             new Thread(() -> {
                 Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
                 String[] videoUris = null;
                 Pair<String, String> results;
                 if (uri.contains("91porn.com")) {
                     results = process91Porn(uri);
+                } else if (uri.contains("xvideos.com")) {
+                    results = processXVideos(uri);
                 } else {
                     results = processCk(WebActivity.this, uri);
                 }
@@ -190,7 +206,7 @@ public class WebActivity extends AppCompatActivity {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    mWebView.evaluateJavascript("start('" + obj.toString() +"',"+id+ ")", null);
+                    mWebView.evaluateJavascript("start('" + obj.toString() + "'," + id + ")", null);
                 });
             }).start();
         }

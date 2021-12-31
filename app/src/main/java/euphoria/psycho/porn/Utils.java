@@ -2,14 +2,19 @@ package euphoria.psycho.porn;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.graphics.Color;
 import android.os.Process;
 import android.util.Log;
+import android.util.Pair;
 
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -25,19 +30,6 @@ public class Utils {
         URL url = new URL("https://www.iesdouyin.com/web/api/v2/aweme/iteminfo/?item_ids=" + videoId);
         HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
         urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36");
-        int code = urlConnection.getResponseCode();
-        if (code < 400 && code >= 200) {
-            return Shared.readString(urlConnection);
-        } else {
-            return null;
-        }
-    }
-
-    public static String getString(String[] uri) throws IOException {
-        URL url = new URL("https:" + uri[0]);
-        HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
-        urlConnection.addRequestProperty("Cookie", "did=web_72fb31b9cb57408aa7bd20e63183ac49; didv=1640743103000; clientid=3");
-        urlConnection.setRequestProperty("User-Agent", Shared.USER_AGENT);
         int code = urlConnection.getResponseCode();
         if (code < 400 && code >= 200) {
             return Shared.readString(urlConnection);
@@ -168,4 +160,55 @@ public class Utils {
         return new String[]{urlConnection.getHeaderField("Location"), stringBuilder.toString()};
     }
 
+    public static String getString(String[] uri) throws IOException {
+        URL url = new URL("https:" + uri[0]);
+        HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
+        urlConnection.addRequestProperty("Cookie", "did=web_72fb31b9cb57408aa7bd20e63183ac49; didv=1640743103000; clientid=3");
+        urlConnection.setRequestProperty("User-Agent", Shared.USER_AGENT);
+        int code = urlConnection.getResponseCode();
+        if (code < 400 && code >= 200) {
+            return Shared.readString(urlConnection);
+        } else {
+            return null;
+        }
+    }
+
+    public static String getXVideosString(String uri) throws IOException {
+        URL url = new URL(uri);
+        HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
+        urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36");
+        int code = urlConnection.getResponseCode();
+        if (code < 400 && code >= 200) {
+            return Shared.readString(urlConnection);
+        } else {
+            return null;
+        }
+    }
+
+    public static String[] getXVideosVideoAddress(String uri) throws IOException {
+        String response = getXVideosString(uri);
+        if (response == null) {
+            return null;
+        }
+        String title = Shared.substring(response, "html5player.setVideoTitle('", "');");
+        String hlsAddress = Shared.substring(response, "html5player.setVideoHLS('", "');");
+        String hls = getXVideosString(hlsAddress);
+        if (hls == null) {
+            return null;
+        }
+        String[] lines = hls.split("\n");
+        List<Pair<Integer, String>> videos = new ArrayList<>();
+        for (int i = 0; i < lines.length; i++) {
+            if (!lines[i].contains("#EXT-X-STREAM-INF")) {
+                continue;
+            }
+            videos.add(Pair.create(
+                    Integer.parseInt(Shared.substring(lines[i], "NAME=\"", "p\"")),
+                    lines[i + 1]
+            ));
+            i++;
+        }
+        Collections.sort(videos, (o1, o2) -> o2.first - o1.first);
+        return new String[]{title, Shared.substringBeforeLast(hlsAddress, "/") + "/" + videos.get(0).second};
+    }
 }
