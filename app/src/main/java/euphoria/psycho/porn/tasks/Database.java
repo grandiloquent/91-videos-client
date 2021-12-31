@@ -68,7 +68,7 @@ public class Database extends SQLiteOpenHelper {
     }
 
     public TaskInfo getTaskInfo() {
-        Cursor cursor = getReadableDatabase().rawQuery("SELECT * FROM TaskInfo", null);
+        Cursor cursor = getReadableDatabase().rawQuery("SELECT * FROM TaskInfo LIMIT 1", null);
         if (cursor.moveToNext()) {
             TaskInfo taskInfo = new TaskInfo();
             taskInfo.uid = cursor.getInt(0);
@@ -78,13 +78,15 @@ public class Database extends SQLiteOpenHelper {
             taskInfo.status = cursor.getInt(4);
             taskInfo.sequence = cursor.getInt(5);
             taskInfo.directory = cursor.getString(6);
+            return taskInfo;
         }
         cursor.close();
         return null;
     }
+
     public List<Task> getTasks() {
         Cursor cursor = getReadableDatabase().rawQuery("SELECT * FROM Task", null);
-        List<Task> tasks=new ArrayList<>();
+        List<Task> tasks = new ArrayList<>();
         while (cursor.moveToNext()) {
             Task task = new Task();
             task.uid = cursor.getInt(0);
@@ -96,6 +98,7 @@ public class Database extends SQLiteOpenHelper {
         cursor.close();
         return tasks;
     }
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }

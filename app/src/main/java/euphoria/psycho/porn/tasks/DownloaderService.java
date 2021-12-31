@@ -11,6 +11,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Process;
+import android.util.Log;
 import android.util.Pair;
 
 import java.io.File;
@@ -47,6 +48,9 @@ public class DownloaderService extends Service implements RequestListener {
             String dbName = database.getAbsolutePath();
             Database db = new Database(getApplicationContext(), dbName);
             TaskInfo taskInfo = db.getTaskInfo();
+            if (taskInfo == null) {
+                continue;
+            }
             if (taskInfo.status == 5 || new File(taskInfo.fileName).exists()) {
                 Native.removeDirectory(taskInfo.directory);
                 continue;
@@ -65,13 +69,18 @@ public class DownloaderService extends Service implements RequestListener {
             }
             mExecutor.submit(downloaderRequest);
         }
+        if (checkFinished()) return;
+        mHandler.post(() -> showNotification(getString(R.string.downloading_video, mRequests.size())));
+
+    }
+
+    private boolean checkFinished() {
         if (mRequests.size() == 0) {
             mNotificationManager.cancel(1);
             stopSelf();
-            return;
+            return true;
         }
-        mHandler.post(() -> showNotification(getString(R.string.downloading_video, mRequests.size())));
-
+        return false;
     }
 
     private void checkUncompletedTasks() {
@@ -171,15 +180,14 @@ public class DownloaderService extends Service implements RequestListener {
             createNotificationChannel(this, DOWNLOAD_VIDEO, getString(R.string.download_video_channel));
         }
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        showNotification(getString(R.string.download));
+
     }
 
     @Override
     public void onProgress(DownloaderRequest rquest) {
         int status = rquest.getStatus();
         if (status == 5 || status < 0) {
-            rquest
-                    .getTaskDatabase().updateTaskStatus(rquest.getTaskInfo().uid, rquest.getStatus());
+            rquest.getTaskDatabase().updateTaskStatus(rquest.getTaskInfo().uid, rquest.getStatus());
             if (status == 5) {
                 Native.removeDirectory(rquest.getTaskInfo().directory);
             }
@@ -190,6 +198,11 @@ public class DownloaderService extends Service implements RequestListener {
                     }
                 }
             }
+            if (mRequests.size() == 0) {
+                stopSelf();
+                return;
+            }
+            if (checkFinished()) return;
             mHandler.post(() -> showNotification(getString(R.string.downloading_video, mRequests.size())));
         }
     }
@@ -206,8 +219,8 @@ public class DownloaderService extends Service implements RequestListener {
             Pair<String, String> info = getVideoInformation(videoAddress);
             if (info != null) {
                 if (info.second.contains(".mp4")) {
-                    Shared.downloadFile(this,
-                            (info.first == null ? Shared.toHex(info.second.getBytes(StandardCharsets.UTF_8)) : info.first) + ".mp4", info.second, USER_AGENT);
+                    mHandler.post(() -> Shared.downloadFile(DownloaderService.this,
+                            (info.first == null ? Shared.toHex(info.second.getBytes(StandardCharsets.UTF_8)) : info.first) + ".mp4", info.second, USER_AGENT));
                     return;
                 }
                 try {
