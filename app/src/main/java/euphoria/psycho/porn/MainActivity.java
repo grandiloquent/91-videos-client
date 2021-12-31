@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestStoragePremissions(this);
+        requestStoragePremissions(this, false);
         setContentView(R.layout.main_activity);
         mWebView = findViewById(R.id.web_view);
         mRoot = findViewById(R.id.root);
@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         bottomSheetItem.icon = R.drawable.ic_action_playlist_play;
         bottomSheetItem.title = "视频";
         bottomSheetItem.listener = (view1, position) -> {
-            //startVideoList(getContext());
+            startVideoList(this);
         };
         return bottomSheetItem;
     }
@@ -172,5 +172,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             return;
         }
         super.onBackPressed();
+    }
+
+    private static void startVideoList(Context context) {
+        Intent starter = new Intent(context, VideoListActivity.class);
+        context.startActivity(starter);
     }
 }

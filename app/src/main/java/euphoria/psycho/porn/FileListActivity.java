@@ -1,5 +1,6 @@
 package euphoria.psycho.porn;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -17,7 +18,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class FileListActivity extends AppCompatActivity {
+public class FileListActivity extends Activity {
     private static final String KEY_LAST_VISITED_FOLDER = "key_last_visited_folder";
     private RecyclerView mRecyclerView;
     private String mDirectory;
@@ -26,7 +27,7 @@ public class FileListActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getActionBar()).setDisplayHomeAsUpEnabled(true);
         setContentView(R.layout.file_list_activity);
         mRecyclerView = findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));

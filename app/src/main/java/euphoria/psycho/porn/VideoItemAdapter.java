@@ -2,62 +2,51 @@ package euphoria.psycho.porn;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.Environment;
 import android.os.StrictMode;
+import android.util.Log;
+import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.util.Util;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import euphoria.psycho.porn.VideoItemAdapter.ViewHolder;
 
-public class VideoItemAdapter extends RecyclerView.Adapter<ViewHolder> {
-    private final List<VideoItem> mVideoItems = new ArrayList<>();
-    private final LayoutInflater mInflater;
+public class VideoItemAdapter extends BaseAdapter {
     private final Context mContext;
-    private String mDirectory;
-
-    public void setDirectory(String directory) {
-        mDirectory = directory;
-    }
+    private final LayoutInflater mInflater;
+    private final List<VideoItem> mVideoItems = new ArrayList<>();
+    private LruCache<String, BitmapDrawable> mLruCache;
+    private ExecutorService mExecutorService = Executors.newFixedThreadPool(3);
 
     public VideoItemAdapter(Context context) {
         mContext = context;
         this.mInflater = LayoutInflater.from(context);
-    }
-
-    @Override
-    public int getItemCount() {
-        return mVideoItems.size();
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        VideoItem videoItem = mVideoItems.get(position);
-        holder.title.setText(Shared.substringAfterLast(videoItem.path, "/"));
-        Glide.with(mContext)
-                .load(videoItem.path)
-                .centerInside()
-                .into(holder.thumbnail);
-    }
-
-    @NonNull
-    @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.video_item, parent, false);
-        return new ViewHolder(view);
+        mLruCache = new LruCache<>(1000);
     }
 
     public void updateVideos(List<VideoItem> videoItems) {
@@ -66,76 +55,88 @@ public class VideoItemAdapter extends RecyclerView.Adapter<ViewHolder> {
         notifyDataSetChanged();
     }
 
-    public interface ItemClickListener {
-        void onItemClick(View view, int position);
+    @Override
+    public int getCount() {
+        return mVideoItems.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        private ItemClickListener mClickListener;
-        TextView title;
-        ImageView thumbnail;
+    @Override
+    public Object getItem(int position) {
+        return null;
+    }
 
-        ViewHolder(View itemView) {
-            super(itemView);
-            itemView.setOnClickListener(this);
-            itemView.setOnLongClickListener(new OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    PopupMenu popupMenu = new PopupMenu(mContext, title);
-                    popupMenu.inflate(R.menu.video_item);
-                    addDirectories(popupMenu);
-                    popupMenu.show();
-                    popupMenu.setOnMenuItemClickListener(item -> {
-                        if (item.getItemId() == R.id.action_send) {
-                            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
-                            StrictMode.setVmPolicy(builder.build());
+    @Override
+    public long getItemId(int position) {
+        return 0;
+    }
 
-                            VideoItem videoItem = mVideoItems.get(getAdapterPosition());
-                            File file = new File(videoItem.path);
-                            Intent shareIntent = new Intent();
-                            shareIntent.setAction(Intent.ACTION_SEND);
-                            shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
-                            shareIntent.setType("video/*");
-                            mContext.startActivity(Intent.createChooser(shareIntent, "发送视频"));
-                        } else {
-                            performMoveFile(item);
-                        }
-                        return false;
-                    });
-                    return true;
-                }
-            });
-            thumbnail = itemView.findViewById(R.id.thumbnail);
-            title = itemView.findViewById(R.id.title);
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        ViewHolder viewHolder;
+        if (convertView == null) {
+            convertView = mInflater.inflate(R.layout.video_item, parent, false);
+            viewHolder = new ViewHolder();
+            viewHolder.title = convertView.findViewById(R.id.title);
+            viewHolder.thumbnail = convertView.findViewById(R.id.thumbnail);
+            convertView.setTag(viewHolder);
+        } else {
+            viewHolder = (ViewHolder) convertView.getTag();
         }
+        viewHolder.title.setText(Shared.substringAfterLast(mVideoItems.get(position).path, "/"));
+        viewHolder.thumbnail.setTag(mVideoItems.get(position).path);
+        mExecutorService.submit(new Loader(mContext, viewHolder, mLruCache));
+        return convertView;
+    }
 
-        private void performMoveFile(MenuItem item) {
-            File dir = new File(mDirectory, item.getTitle().toString());
-            VideoItem videoItem = mVideoItems.get(getAdapterPosition());
-            File file = new File(videoItem.path);
-            file.renameTo(new File(dir, Shared.substringAfterLast(videoItem.path, "/")));
-            int position = getAdapterPosition();
-            mVideoItems.remove(position);
-            notifyItemRemoved(position);
-        }
+    private static class Loader implements Runnable {
+        private ViewHolder mViewHolder;
+        private String mPath;
+        private int mSize;
+        private File mDirectory;
+        private LruCache<String, BitmapDrawable> mLruCache;
 
-        private void addDirectories(PopupMenu popupMenu) {
-            if (mDirectory == null) return;
-            File dir = new File(mDirectory);
-            File[] directories = dir.listFiles(File::isDirectory);
-            if (directories == null) {
-                return;
-            }
-            for (File r : directories) {
-                popupMenu.getMenu().add(r.getName());
-            }
+        public Loader(Context context, ViewHolder viewHolder, LruCache<String, BitmapDrawable> lruCache) {
+            mViewHolder = viewHolder;
+            mPath = viewHolder.thumbnail.getTag().toString();
+            mSize = context.getResources().getDisplayMetrics().widthPixels / 2;
+            mDirectory = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+            mLruCache = lruCache;
         }
 
         @Override
-        public void onClick(View view) {
-            PlayerActivity.launchActivity(mContext, new File(
-                    mVideoItems.get(getAdapterPosition()).path
-            ));
+        public void run() {
+            if (mLruCache.get(mPath) != null) {
+                mViewHolder.thumbnail.setBackground(mLruCache.get(mPath));
+                return;
+            }
+            Bitmap bitmap = null;
+            File image = new File(mDirectory, Shared.md5(mPath));
+            if (image.exists()) {
+                bitmap = BitmapFactory.decodeFile(image.getAbsolutePath());
+            }
+            if (bitmap == null) {
+                Bitmap source = Shared.createVideoThumbnail(mPath);
+                if (source == null) return;
+                bitmap = Shared.resizeAndCropCenter(source, mSize, true);
+                try {
+                    FileOutputStream fos = new FileOutputStream(image);
+                    bitmap.compress(CompressFormat.JPEG, 80, fos);
+                    fos.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (mViewHolder.thumbnail.getTag().toString().equals(mPath)) {
+                BitmapDrawable bitmapDrawable = new BitmapDrawable(bitmap);
+                mLruCache.put(mPath, bitmapDrawable);
+                mViewHolder.thumbnail.setBackground(bitmapDrawable);
+            }
+
         }
+    }
+
+    public static class ViewHolder {
+        public TextView title;
+        public ImageView thumbnail;
     }
 }

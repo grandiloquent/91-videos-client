@@ -1,6 +1,6 @@
 package euphoria.psycho.porn;
 
-import android.content.DialogInterface;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
@@ -10,8 +10,7 @@ import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
-
+import android.widget.GridView;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -20,28 +19,24 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import euphoria.psycho.porn.Shared.Listener;
 
 // FileListActivity
-public class VideoListActivity extends AppCompatActivity {
+public class VideoListActivity extends Activity {
     private static final String KEY_FAVORITES_LIST = "key_favorites_list";
-    private RecyclerView mRecyclerView;
+    private GridView mGridView;
     private VideoItemAdapter mVideoItemAdapter;
     private String mDirectory;
 
     private void initialize() {
         mDirectory = PreferenceManager.getDefaultSharedPreferences(this)
                 .getString(SettingsFragment.KEY_VIDEO_FOLDER, getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath());
-        mVideoItemAdapter.setDirectory(mDirectory);
         loadFolder();
     }
 
@@ -88,20 +83,18 @@ public class VideoListActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.video_list_activity);
-        mRecyclerView = findViewById(R.id.recycler_view);
-        mRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
-        mVideoItemAdapter = new VideoItemAdapter(this);
-        mRecyclerView.setAdapter(mVideoItemAdapter);
-        mRecyclerView.addItemDecoration(new SpacesItemDecoration(Shared.dpToPx(this, 12)));
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        initialize();
-    }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.video_list, menu);
-        return super.onCreateOptionsMenu(menu);
+        setContentView(R.layout.video_list_activity);
+        mGridView = findViewById(R.id.recycler_view);
+        mGridView.setNumColumns(2);
+        registerForContextMenu(mGridView);
+        mVideoItemAdapter = new VideoItemAdapter(this);
+        mGridView.setAdapter(mVideoItemAdapter);
+       // getActionBar().setDisplayHomeAsUpEnabled(true);
+        //getActionBar().show();
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+
+        initialize();
     }
 
     @Override
@@ -109,6 +102,12 @@ public class VideoListActivity extends AppCompatActivity {
         super.onResume();
         if (mDirectory != null)
             loadFolder();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.video_list, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -139,7 +138,6 @@ public class VideoListActivity extends AppCompatActivity {
                         .edit()
                         .putString(SettingsFragment.KEY_VIDEO_FOLDER, mDirectory)
                         .apply();
-                mVideoItemAdapter.setDirectory(mDirectory);
                 loadFolder();
             });
             AlertDialog dialog = builder.create();
