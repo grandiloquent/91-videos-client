@@ -142,7 +142,6 @@ public class DownloaderService extends Service implements RequestListener {
         }
         return tasks;
     }
-
     private Pair<String, String> getVideoInformation(String videoAddress) {
         Pair<String, String> results;
         if (videoAddress.contains("91porn.com")) {
