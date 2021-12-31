@@ -38,11 +38,11 @@ public class DownloaderRequest implements Runnable {
     private int mStatus;
     private List<Task> mTasks;
     private String mDirectory;
-    private TaskDatabase mTaskDatabase;
+    private Database mTaskDatabase;
 
-    public DownloaderRequest(TaskDatabase taskDatabase, RequestListener listener) {
-        mTaskInfo = taskDatabase.taskInfoDao().getAll().get(0);
-        mTasks = taskDatabase.taskDao().getAll();
+    public DownloaderRequest(Database taskDatabase, RequestListener listener) {
+        mTaskInfo = taskDatabase.getTaskInfo();
+        mTasks = taskDatabase.getTasks();
         mListener = listener;
         mBaseUri = Shared.substringBeforeLast(mTaskInfo.uri, "/") + "/";
         mDirectory = new File(mTaskInfo.directory).getAbsolutePath();
@@ -54,7 +54,7 @@ public class DownloaderRequest implements Runnable {
         return mStatus;
     }
 
-    public TaskDatabase getTaskDatabase() {
+    public Database getTaskDatabase() {
         return mTaskDatabase;
     }
 
@@ -115,11 +115,11 @@ public class DownloaderRequest implements Runnable {
                 }
                 if (VERSION.SDK_INT >= VERSION_CODES.N) {
                     task.totalSize = c.getContentLengthLong();
-                    mTaskDatabase.taskDao().updateTotalSize(task.uid, task.totalSize);
+                    mTaskDatabase.updateTaskTotalSize(task.uid, task.totalSize);
                 } else {
                     try {
                         task.totalSize = Long.parseLong(c.getHeaderField("Content-Length"));
-                        mTaskDatabase.taskDao().updateTotalSize(task.uid, task.totalSize);
+                        mTaskDatabase.updateTaskTotalSize(task.uid, task.totalSize);
                     } catch (Exception ignored) {
                     }
                 }

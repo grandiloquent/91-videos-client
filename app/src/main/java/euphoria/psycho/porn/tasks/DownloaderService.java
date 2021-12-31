@@ -11,7 +11,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Process;
-import android.util.Log;
 import android.util.Pair;
 
 import java.io.File;
@@ -23,7 +22,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import androidx.annotation.Nullable;
-import androidx.room.Room;
 import euphoria.psycho.porn.Native;
 import euphoria.psycho.porn.R;
 import euphoria.psycho.porn.Shared;
@@ -47,8 +45,8 @@ public class DownloaderService extends Service implements RequestListener {
         for (File dir : directories) {
             File database = new File(dir, "data.db");
             String dbName = database.getAbsolutePath();
-            TaskDatabase db = Room.databaseBuilder(getApplicationContext(), TaskDatabase.class, dbName).build();
-            TaskInfo taskInfo = db.taskInfoDao().getAll().get(0);
+            Database db = new Database(getApplicationContext(), dbName);
+            TaskInfo taskInfo = db.getTaskInfo();
             if (taskInfo.status == 5 || new File(taskInfo.fileName).exists()) {
                 Native.removeDirectory(taskInfo.directory);
                 continue;
@@ -90,15 +88,15 @@ public class DownloaderService extends Service implements RequestListener {
         }
         List<Task> tasks = createTasks(databaseParameter.response);
         String dbName = database.getAbsolutePath();
-        TaskDatabase db = Room.databaseBuilder(getApplicationContext(), TaskDatabase.class, dbName).build();
-        db.taskDao().insertAll(tasks.toArray(new Task[0]));
+        Database db = new Database(getApplicationContext(), dbName);
+        db.insertTasks(tasks);
         TaskInfo taskInfo = new TaskInfo();
         taskInfo.segmentSize = tasks.size();
         taskInfo.uri = databaseParameter.downloadLink;
         taskInfo.fileName = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
                 Shared.getValidFileName(databaseParameter.title) + ".mp4").getAbsolutePath();
         taskInfo.directory = databaseParameter.dir.getAbsolutePath();
-        db.taskInfoDao().insertAll(taskInfo);
+        db.insertTaskInfo(taskInfo);
     }
 
     private File createDirectory(String contents) {
@@ -181,9 +179,7 @@ public class DownloaderService extends Service implements RequestListener {
         int status = rquest.getStatus();
         if (status == 5 || status < 0) {
             rquest
-                    .getTaskDatabase()
-                    .taskInfoDao()
-                    .updateStatus(rquest.getTaskInfo().uid, rquest.getStatus());
+                    .getTaskDatabase().updateTaskStatus(rquest.getTaskInfo().uid, rquest.getStatus());
             if (status == 5) {
                 Native.removeDirectory(rquest.getTaskInfo().directory);
             }
