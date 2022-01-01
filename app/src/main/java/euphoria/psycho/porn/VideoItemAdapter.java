@@ -6,6 +6,7 @@ import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +28,7 @@ public class VideoItemAdapter extends BaseAdapter {
     private final List<VideoItem> mVideoItems = new ArrayList<>();
     private LruCache<String, BitmapDrawable> mLruCache;
     private ExecutorService mExecutorService = Executors.newFixedThreadPool(3);
+    private Handler mHandler = new Handler();
 
     public VideoItemAdapter(Context context) {
         mContext = context;
@@ -69,7 +71,7 @@ public class VideoItemAdapter extends BaseAdapter {
         }
         viewHolder.title.setText(Shared.substringAfterLast(mVideoItems.get(position).path, "/"));
         viewHolder.thumbnail.setTag(mVideoItems.get(position).path);
-        mExecutorService.submit(new Loader(mContext, viewHolder, mLruCache));
+        mExecutorService.submit(new Loader(mContext, viewHolder, mLruCache, mHandler));
         return convertView;
     }
 
@@ -79,19 +81,21 @@ public class VideoItemAdapter extends BaseAdapter {
         private int mSize;
         private File mDirectory;
         private LruCache<String, BitmapDrawable> mLruCache;
+        private final Handler mHandler;
 
-        public Loader(Context context, ViewHolder viewHolder, LruCache<String, BitmapDrawable> lruCache) {
+        public Loader(Context context, ViewHolder viewHolder, LruCache<String, BitmapDrawable> lruCache, Handler handler) {
             mViewHolder = viewHolder;
             mPath = viewHolder.thumbnail.getTag().toString();
             mSize = context.getResources().getDisplayMetrics().widthPixels / 2;
             mDirectory = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
             mLruCache = lruCache;
+            mHandler = handler;
         }
 
         @Override
         public void run() {
             if (mLruCache.get(mPath) != null) {
-                mViewHolder.thumbnail.setBackground(mLruCache.get(mPath));
+               mHandler.post(() -> mViewHolder.thumbnail.setBackground(mLruCache.get(mPath)));
                 return;
             }
             Bitmap bitmap = null;
@@ -114,7 +118,7 @@ public class VideoItemAdapter extends BaseAdapter {
             if (mViewHolder.thumbnail.getTag().toString().equals(mPath)) {
                 BitmapDrawable bitmapDrawable = new BitmapDrawable(bitmap);
                 mLruCache.put(mPath, bitmapDrawable);
-                mViewHolder.thumbnail.setBackground(bitmapDrawable);
+                mHandler.post(() -> mViewHolder.thumbnail.setBackground(bitmapDrawable));
             }
 
         }

@@ -10,7 +10,7 @@ android {
         minSdk 23
         targetSdk 31
         versionCode 1
-        versionName "1.1"
+        versionName "1.2"
         ndk {
             // Don't package arm64-v8a or x86_64 , 'x86' 'armeabi-v7a',
             abiFilters 'arm64-v8a'
