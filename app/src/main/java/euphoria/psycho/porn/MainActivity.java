@@ -118,6 +118,7 @@ public class MainActivity extends Activity {
                     new int[]{R.drawable.ic_action_search, R.string.search},
                     new int[]{R.drawable.ic_action_playlist_play, R.string.video},
                     new int[]{R.drawable.ic_action_settings, R.string.set_up},
+                    new int[]{R.drawable.ic_action_help_outline, R.string.help}
             };
             for (int[] ints : items) {
                 BottomSheetItem bottomSheetItem = new BottomSheetItem();
@@ -128,7 +129,7 @@ public class MainActivity extends Activity {
             BottomSheetItemAdapter ba = new BottomSheetItemAdapter(this, bottomSheetItems);
             gridView.setAdapter(ba);
             gridView.setOnItemClickListener((parent, view, position, id) -> {
-                if(position==0){
+                if (position == 0) {
                     Shared.openTextContentDialog(MainActivity.this,
                             getString(R.string.search),
                             this::onQueryTextSubmit
@@ -139,6 +140,8 @@ public class MainActivity extends Activity {
                 } else if (position == 2) {
                     Intent starter = new Intent(MainActivity.this, SettingsActivity.class);
                     startActivity(starter);
+                } else {
+                    mWebView.loadUrl("https://lucidu.cn/article/hhoplt");
                 }
                 mRoot.dismissSheet();
             });
