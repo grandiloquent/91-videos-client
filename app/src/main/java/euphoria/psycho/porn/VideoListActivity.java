@@ -4,20 +4,24 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.preference.PreferenceManager;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,36 +35,35 @@ public class VideoListActivity extends Activity {
     private VideoItemAdapter mVideoItemAdapter;
     private String mDirectory;
 
+    private String getDefaultPath() {
+        return getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
+    }
+
     private void initialize() {
-        mDirectory = PreferenceManager.getDefaultSharedPreferences(this)
-                .getString(SettingsFragment.KEY_VIDEO_FOLDER, getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath());
+        mDirectory = SettingsFragment.getString(this, SettingsFragment.KEY_VIDEO_FOLDER, getDefaultPath());
         loadFolder();
     }
 
-    // PlayerActivity
+    private void loadDirectory() {
+        SettingsFragment.setString(this, SettingsFragment.KEY_VIDEO_FOLDER, mDirectory);
+        loadFolder();
+    }
+
     private void loadFolder() {
         File dir = new File(mDirectory);
-        File[] videos = dir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return pathname.isFile() && pathname.getName().endsWith(".mp4");
-            }
-        });
+        File[] videos = dir.listFiles(pathname -> pathname.isFile() && pathname.getName().endsWith(".mp4"));
         if (videos == null) {
             return;
         }
-        Arrays.sort(videos, new Comparator<File>() {
-            @Override
-            public int compare(File o1, File o2) {
-                final long result = o2.lastModified() - o1.lastModified();
-                if (result < 0) {
-                    return -1;
-                }
-                if (result > 0) {
-                    return 1;
-                }
-                return 0;
+        Arrays.sort(videos, (o1, o2) -> {
+            final long result = o2.lastModified() - o1.lastModified();
+            if (result < 0) {
+                return -1;
             }
+            if (result > 0) {
+                return 1;
+            }
+            return 0;
         });
         List<VideoItem> videoItems = new ArrayList<>();
         for (File video : videos) {
@@ -72,25 +75,24 @@ public class VideoListActivity extends Activity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode,  Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         initialize();
     }
 
     @Override
-    protected void onCreate( Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.video_list_activity);
         mGridView = findViewById(R.id.recycler_view);
         mGridView.setNumColumns(2);
         registerForContextMenu(mGridView);
         mVideoItemAdapter = new VideoItemAdapter(this);
         mGridView.setAdapter(mVideoItemAdapter);
-       // getActionBar().setDisplayHomeAsUpEnabled(true);
-        //getActionBar().show();
+        mGridView.setOnItemClickListener((parent, view, position, id) -> PlayerActivity.launchActivity(view.getContext(), new File(
+                mVideoItemAdapter.getItem(position).path
+        )));
         getActionBar().setDisplayHomeAsUpEnabled(true);
-
         initialize();
     }
 
@@ -108,7 +110,30 @@ public class VideoListActivity extends Activity {
     }
 
     @Override
-    public boolean onOptionsItemSelected( MenuItem item) {
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+        menu.add(0, 0, 0, R.string.share);
+        super.onCreateContextMenu(menu, v, menuInfo);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterContextMenuInfo contextMenuInfo = (AdapterContextMenuInfo) item.getMenuInfo();
+        VideoItem videoItem = mVideoItemAdapter.getItem(contextMenuInfo.position);
+        if (item.getItemId() == 0) {
+            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+            StrictMode.setVmPolicy(builder.build());
+            File file = new File(videoItem.path);
+            Intent shareIntent = new Intent();
+            shareIntent.setAction(Intent.ACTION_SEND);
+            shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
+            shareIntent.setType("video/*");
+            startActivity(Intent.createChooser(shareIntent, "发送视频"));
+        }
+        return super.onContextItemSelected(item);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_selector) {
             Intent starter = new Intent(this, FileListActivity.class);
             startActivityForResult(starter, 0);
@@ -131,25 +156,17 @@ public class VideoListActivity extends Activity {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setItems(strings, (dialog, which) -> {
                 mDirectory = strings[which];
-                PreferenceManager.getDefaultSharedPreferences(this)
-                        .edit()
-                        .putString(SettingsFragment.KEY_VIDEO_FOLDER, mDirectory)
-                        .apply();
-                loadFolder();
+                loadDirectory();
             });
             AlertDialog dialog = builder.create();
             dialog.show();
         } else if (item.getItemId() == android.R.id.home) {
             finish();
         } else if (item.getItemId() == R.id.action_video) {
-            mDirectory = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
-            PreferenceManager.getDefaultSharedPreferences(this)
-                    .edit()
-                    .putString(SettingsFragment.KEY_VIDEO_FOLDER, mDirectory)
-                    .apply();
-            loadFolder();
+            mDirectory = getDefaultPath();
+            loadDirectory();
         } else if (item.getItemId() == R.id.action_create_directory) {
-            Shared.openTextContentDialog(this, "创建目录", new Listener() {
+            Shared.openTextContentDialog(this, getString(R.string.create_a_directory), new Listener() {
                 @Override
                 public void onSuccess(String value) {
                     File dir = new File(mDirectory, value.trim());
@@ -160,7 +177,4 @@ public class VideoListActivity extends Activity {
         }
         return super.onOptionsItemSelected(item);
     }
-
-
-
 }

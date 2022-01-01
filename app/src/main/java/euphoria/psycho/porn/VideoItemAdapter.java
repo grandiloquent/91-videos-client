@@ -1,36 +1,25 @@
 package euphoria.psycho.porn;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
 import android.os.Environment;
-import android.os.StrictMode;
-import android.util.Log;
 import android.util.LruCache;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 
-
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import euphoria.psycho.porn.VideoItemAdapter.ViewHolder;
 
 public class VideoItemAdapter extends BaseAdapter {
     private final Context mContext;
@@ -57,8 +46,8 @@ public class VideoItemAdapter extends BaseAdapter {
     }
 
     @Override
-    public Object getItem(int position) {
-        return null;
+    public VideoItem getItem(int position) {
+        return mVideoItems.get(position);
     }
 
     @Override

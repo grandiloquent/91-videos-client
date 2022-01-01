@@ -4,4 +4,6 @@
     <string name="download_video_channel">下载视频频道</string>
     <string name="downloading_video">正在 %1$d 下载视频</string>
     <string name="select_folder">选择文件夹</string>
+    <string name="create_a_directory">创建目录</string>
+<string name="share">分享</string>
 </resources>
