@@ -132,17 +132,11 @@ public class PlayerActivity extends Activity implements OnTouchListener {
         return files;
     }
 
-    private void bindingFullScreenEvent() {
-        findViewById(R.id.action_fullscreen)
-                .setOnClickListener(v -> fullScreen());
-
-    }
-
     private void bindingDeleteVideoEvent() {
         findViewById(R.id.action_file_download)
                 .setOnClickListener(v -> new AlertDialog.Builder(PlayerActivity.this)
                         .setTitle("询问")
-                        .setMessage("确定要删除当前视频吗？")
+                        .setMessage("确定要删除 \"" + Shared.substringAfterLast(mPlayList.get(mPlayIndex), "/") + "\" 视频吗？")
                         .setPositiveButton(android.R.string.ok, (dialog, which) -> {
                             deleteVideo();
                             dialog.dismiss();
@@ -151,6 +145,12 @@ public class PlayerActivity extends Activity implements OnTouchListener {
                             dialog.dismiss();
                         })
                         .show());
+    }
+
+    private void bindingFullScreenEvent() {
+        findViewById(R.id.action_fullscreen)
+                .setOnClickListener(v -> fullScreen());
+
     }
 
     private void clearSurface() {
@@ -362,7 +362,7 @@ public class PlayerActivity extends Activity implements OnTouchListener {
     }
 
     private void play() throws IOException {
-        //getSupportActionBar().setTitle(Shared.substringAfterLast(mPlayList.get(mPlayIndex), "/"));
+        getActionBar().setTitle(Shared.substringAfterLast(mPlayList.get(mPlayIndex), "/"));
         mMediaPlayer.setDataSource(mPlayList.get(mPlayIndex));
         mMediaPlayer.prepareAsync();
     }
@@ -389,7 +389,7 @@ public class PlayerActivity extends Activity implements OnTouchListener {
     }
 
     @Override
-    protected void onCreate( Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.player_activity);
         bindingDeleteVideoEvent();

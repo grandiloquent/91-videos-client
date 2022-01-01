@@ -33,16 +33,13 @@
 
         </activity>
         <activity android:name=".SettingsActivity" />
-        <activity android:name=".PlayerActivity" />
+        <activity
+            android:name=".PlayerActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize" />
         <activity
             android:name=".FileListActivity"
             android:label="浏览文件" />
         <activity android:name=".WebActivity" />
-        <activity
-            android:name=".tasks.DownloaderActivity"
-            android:exported="true">
-
-        </activity>
 
         <service android:name=".tasks.DownloaderService" />
     </application>

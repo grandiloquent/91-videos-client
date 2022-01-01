@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Process;
 import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -94,8 +95,9 @@ public class VideoItemAdapter extends BaseAdapter {
 
         @Override
         public void run() {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
             if (mLruCache.get(mPath) != null) {
-               mHandler.post(() -> mViewHolder.thumbnail.setBackground(mLruCache.get(mPath)));
+                mHandler.post(() -> mViewHolder.thumbnail.setBackground(mLruCache.get(mPath)));
                 return;
             }
             Bitmap bitmap = null;
