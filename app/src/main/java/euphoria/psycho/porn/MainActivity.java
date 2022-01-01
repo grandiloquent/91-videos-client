@@ -32,13 +32,14 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import euphoria.psycho.porn.Shared.Listener;
 import euphoria.psycho.porn.tasks.DownloaderService;
 
 import static android.view.MenuItem.SHOW_AS_ACTION_ALWAYS;
 import static android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM;
 import static euphoria.psycho.porn.Shared.requestStoragePremissions;
 
-public class MainActivity extends Activity implements SearchView.OnQueryTextListener {
+public class MainActivity extends Activity {
 
     private WebView mWebView;
     private BottomSheetLayout mRoot;
@@ -113,21 +114,33 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
             GridView gridView = (GridView) LayoutInflater.from(this).inflate(R.layout.modal_bottom_sheet_content, null);
             gridView.setNumColumns(3);
             List<BottomSheetItem> bottomSheetItems = new ArrayList<>();
-            bottomSheetItems.add(getVideoListItem());
-            bottomSheetItems.add(getSettingsItem());
+            int[][] items = new int[][]{
+                    new int[]{R.drawable.ic_action_search, R.string.search},
+                    new int[]{R.drawable.ic_action_playlist_play, R.string.video},
+                    new int[]{R.drawable.ic_action_settings, R.string.set_up},
+            };
+            for (int[] ints : items) {
+                BottomSheetItem bottomSheetItem = new BottomSheetItem();
+                bottomSheetItem.title = getString(ints[1]);
+                bottomSheetItem.icon = ints[0];
+                bottomSheetItems.add(bottomSheetItem);
+            }
             BottomSheetItemAdapter ba = new BottomSheetItemAdapter(this, bottomSheetItems);
             gridView.setAdapter(ba);
-            gridView.setOnItemClickListener(new OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    if (position == 0) {
-                        startVideoList(MainActivity.this);
-                    } else if (position == 1) {
-                        Intent starter = new Intent(MainActivity.this, SettingsActivity.class);
-                        startActivity(starter);
-                    }
-                    mRoot.dismissSheet();
+            gridView.setOnItemClickListener((parent, view, position, id) -> {
+                if(position==0){
+                    Shared.openTextContentDialog(MainActivity.this,
+                            getString(R.string.search),
+                            this::onQueryTextSubmit
+                    );
                 }
+                if (position == 1) {
+                    startVideoList(MainActivity.this);
+                } else if (position == 2) {
+                    Intent starter = new Intent(MainActivity.this, SettingsActivity.class);
+                    startActivity(starter);
+                }
+                mRoot.dismissSheet();
             });
             mRoot.showWithSheetView(gridView);
         } else if (item.getItemId() == R.id.action_refresh) {
@@ -137,26 +150,7 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
         return super.onOptionsItemSelected(item);
     }
 
-    private BottomSheetItem getVideoListItem() {
-        BottomSheetItem bottomSheetItem = new BottomSheetItem();
-        bottomSheetItem.icon = R.drawable.ic_action_playlist_play;
-        bottomSheetItem.title = "视频";
-        return bottomSheetItem;
-    }
 
-    private BottomSheetItem getSettingsItem() {
-        BottomSheetItem bottomSheetItem = new BottomSheetItem();
-        bottomSheetItem.icon = R.drawable.ic_action_settings;
-        bottomSheetItem.title = "设置";
-        return bottomSheetItem;
-    }
-
-    @Override
-    public boolean onQueryTextChange(String newText) {
-        return false;
-    }
-
-    @Override
     public boolean onQueryTextSubmit(String query) {
         // https://v.douyin.com/8kSH3tK
         if (Utils.getDouYinVideo(this, query)) {

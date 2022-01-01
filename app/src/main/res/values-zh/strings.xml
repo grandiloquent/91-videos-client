@@ -6,4 +6,7 @@
     <string name="select_folder">选择文件夹</string>
     <string name="create_a_directory">创建目录</string>
 <string name="share">分享</string>
+<string name="search">搜索</string>
+<string name="video">视频</string>
+<string name="set_up">设置</string>
 </resources>

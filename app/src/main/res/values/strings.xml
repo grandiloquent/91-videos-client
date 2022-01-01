@@ -5,4 +5,7 @@
     <string name="select_folder">Select folder</string>
     <string name="create_a_directory">Create a directory</string>
     <string name="share">Share</string>
+    <string name="search">Search</string>
+    <string name="video">Video</string>
+    <string name="set_up">Set up</string>
 </resources>
