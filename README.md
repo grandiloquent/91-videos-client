@@ -22,8 +22,8 @@
 2. 在视频存放的目录打开命令行。
 3. 依序执行以下命令
 
-    mkdir output
-    for /r %i in (*.mp4) do ffmpeg -i "%i" -vcodec libx264 "output\%~ni.mp4"
+        mkdir output
+        for /r %i in (*.mp4) do ffmpeg -i "%i" -vcodec libx264 "output\%~ni.mp4"
 
 ## 问题
 
