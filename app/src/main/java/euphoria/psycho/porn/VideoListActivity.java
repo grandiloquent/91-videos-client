@@ -112,6 +112,10 @@ public class VideoListActivity extends Activity {
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
         menu.add(0, 0, 0, R.string.share);
+        File[] directories = new File(mDirectory).listFiles(File::isDirectory);
+        for (int i = 0; i < directories.length; i++) {
+            menu.add(0, i + 1, 0, directories[i].getName());
+        }
         super.onCreateContextMenu(menu, v, menuInfo);
     }
 
@@ -128,6 +132,11 @@ public class VideoListActivity extends Activity {
             shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
             shareIntent.setType("video/*");
             startActivity(Intent.createChooser(shareIntent, "发送视频"));
+        } else {
+            File dir = new File(mDirectory, item.getTitle().toString());
+            File f = new File(videoItem.path);
+            f.renameTo(new File(dir, f.getName()));
+            loadFolder();
         }
         return super.onContextItemSelected(item);
     }
