@@ -85,16 +85,15 @@
 
     <style name="MyActionBar" parent="@android:style/Widget.Material.Light.ActionBar">
         <item name="android:background">#9C27B0</item>
+        <item name="android:textColorSecondary">@android:color/white</item>
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:textColor">#333333</item>
     </style>
     <style name="AppBaseTheme" >
         <item name="android:actionBarStyle">@style/MyActionBar</item>
-<!--        <item name="colorPrimary">#9C27B0</item>-->
         <item name="android:windowNoTitle">false</item>
         <item name="android:windowActionBar">true</item>
-        <item name="android:textColorSecondary">@android:color/white</item>
-<!--        <item name="android:actionOverflowButtonStyle">@style/ActionButtonOverflow</item>-->
-        <item name="android:textColorPrimary">@android:color/white</item>
-        <item name="android:textColor">#333333</item>
+
     </style>
 
 </resources>

@@ -160,10 +160,8 @@ public class DownloaderService extends Service implements RequestListener {
         } else {
             builder = new Builder(this);
         }
-        Intent i = new Intent(this, DownloaderActivity.class);
         builder.setSmallIcon(android.R.drawable.stat_sys_download)
-                .setContentTitle(title)
-                .setContentIntent(PendingIntent.getActivity(this, 1, i, 0));
+                .setContentTitle(title);
         mNotificationManager.notify(1, builder.build());
     }
 
