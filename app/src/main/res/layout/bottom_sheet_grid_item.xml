@@ -1,24 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:gravity="center"
     android:orientation="vertical">
 
     <ImageView
-        android:id="@+id/icon"
+        android:id="@+id/thumbnail"
         android:layout_width="@dimen/bottom_sheet_menu_grid_icon_size"
         android:layout_height="@dimen/bottom_sheet_menu_grid_icon_size"
         android:layout_marginTop="@dimen/bottom_sheet_menu_dialog_padding"
-        android:layout_marginBottom="@dimen/bottom_sheet_menu_dialog_padding"
-
- />
+        android:layout_marginBottom="@dimen/bottom_sheet_menu_dialog_padding" />
 
     <TextView
         android:id="@+id/title"
         style="@style/BottomSheetMenu.GridItem"
-        android:textAppearance="@style/BottomSheetMenu.GridItem.TextAppearance.Light"
-         />
+        android:layout_gravity="center"
+        android:textAppearance="@style/BottomSheetMenu.GridItem.TextAppearance.Light" />
 
 </LinearLayout>

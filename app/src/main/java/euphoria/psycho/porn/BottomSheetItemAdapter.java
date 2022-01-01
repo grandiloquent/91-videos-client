@@ -4,13 +4,64 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
 
 
-public class BottomSheetItemAdapter {
+public class BottomSheetItemAdapter extends BaseAdapter {
+    private final Context mContext;
+    private final List<BottomSheetItem> mBottomSheetItems;
+    private final LayoutInflater mInflater;
+
+    public BottomSheetItemAdapter(Context context, List<BottomSheetItem> files) {
+        mContext = context;
+        this.mInflater = LayoutInflater.from(context);
+        mBottomSheetItems = files;
+    }
+
+
+    @Override
+    public int getCount() {
+        return mBottomSheetItems.size();
+    }
+
+    @Override
+    public BottomSheetItem getItem(int position) {
+        return mBottomSheetItems.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        VideoItemAdapter.ViewHolder viewHolder;
+        if (convertView == null) {
+            convertView = mInflater.inflate(R.layout.bottom_sheet_grid_item, parent, false);
+            viewHolder = new VideoItemAdapter.ViewHolder();
+            viewHolder.title = convertView.findViewById(R.id.title);
+            viewHolder.thumbnail = convertView.findViewById(R.id.thumbnail);
+            convertView.setTag(viewHolder);
+        } else {
+            viewHolder = (VideoItemAdapter.ViewHolder) convertView.getTag();
+        }
+        BottomSheetItem file = mBottomSheetItems.get(position);
+        viewHolder.title.setText(file.title);
+        viewHolder.thumbnail.setBackgroundResource(file.icon);
+        return convertView;
+    }
+
+
+    public class ViewHolder {
+        TextView title;
+        ImageView thumbnail;
+    }
 //    private final List<BottomSheetItem> mBottomSheetItems;
 //    private final LayoutInflater mInflater;
 //

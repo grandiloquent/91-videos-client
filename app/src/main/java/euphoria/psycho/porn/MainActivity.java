@@ -19,6 +19,9 @@ import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.GridView;
 import android.widget.PopupWindow;
 import android.widget.SearchView;
 
@@ -31,6 +34,8 @@ import java.util.regex.Pattern;
 
 import euphoria.psycho.porn.tasks.DownloaderService;
 
+import static android.view.MenuItem.SHOW_AS_ACTION_ALWAYS;
+import static android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM;
 import static euphoria.psycho.porn.Shared.requestStoragePremissions;
 
 public class MainActivity extends Activity implements SearchView.OnQueryTextListener {
@@ -97,39 +102,45 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
-        MenuItem searchItem = menu.findItem(R.id.search);
-        SearchView searchView = (SearchView) searchItem.getActionView();
-        searchView.setOnQueryTextListener(this);
+        menu.findItem(R.id.action_menu).setShowAsAction(SHOW_AS_ACTION_ALWAYS);
+        menu.findItem(R.id.action_refresh).setShowAsAction(SHOW_AS_ACTION_IF_ROOM);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected( MenuItem item) {
-//        if (item.getItemId() == R.id.action_menu) {
-//            RecyclerView recyclerView = (RecyclerView) LayoutInflater.from(this).inflate(R.layout.modal_bottom_sheet_content, null);
-//            recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-//            List<BottomSheetItem> bottomSheetItems = new ArrayList<>();
-//            bottomSheetItems.add(getVideoListItem());
-//            bottomSheetItems.add(getSettingsItem());
-//            BottomSheetItemAdapter ba = new BottomSheetItemAdapter(this, bottomSheetItems);
-//            recyclerView.setAdapter(ba);
-//            mRoot.showWithSheetView(recyclerView);
-//
-//        } else if (item.getItemId() == R.id.action_refresh) {
-//            mWebView.clearCache(true);
-//            mWebView.reload();
-//        }
-//        return super.onOptionsItemSelected(item);
-        return  true;
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_menu) {
+            GridView gridView = (GridView) LayoutInflater.from(this).inflate(R.layout.modal_bottom_sheet_content, null);
+            gridView.setNumColumns(3);
+            List<BottomSheetItem> bottomSheetItems = new ArrayList<>();
+            bottomSheetItems.add(getVideoListItem());
+            bottomSheetItems.add(getSettingsItem());
+            BottomSheetItemAdapter ba = new BottomSheetItemAdapter(this, bottomSheetItems);
+            gridView.setAdapter(ba);
+            gridView.setOnItemClickListener(new OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    if (position == 0) {
+                        startVideoList(MainActivity.this);
+                    } else if (position == 1) {
+                        Intent starter = new Intent(MainActivity.this, SettingsActivity.class);
+                        startActivity(starter);
+                    }
+                    mRoot.dismissSheet();
+                }
+            });
+            mRoot.showWithSheetView(gridView);
+        } else if (item.getItemId() == R.id.action_refresh) {
+            mWebView.clearCache(true);
+            mWebView.reload();
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private BottomSheetItem getVideoListItem() {
         BottomSheetItem bottomSheetItem = new BottomSheetItem();
         bottomSheetItem.icon = R.drawable.ic_action_playlist_play;
         bottomSheetItem.title = "视频";
-//        bottomSheetItem.listener = (view1, position) -> {
-//            startVideoList(this);
-//        };
         return bottomSheetItem;
     }
 
@@ -137,11 +148,6 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
         BottomSheetItem bottomSheetItem = new BottomSheetItem();
         bottomSheetItem.icon = R.drawable.ic_action_settings;
         bottomSheetItem.title = "设置";
-//        bottomSheetItem.listener = (view1, position) -> {
-//            Intent starter = new Intent(this, SettingsActivity.class);
-//            startActivity(starter);
-//
-//        };
         return bottomSheetItem;
     }
 
