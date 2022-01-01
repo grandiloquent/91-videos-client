@@ -12,7 +12,8 @@
 
 ## 下载地址
 
-- https://github.com/grandiloquent/91porn-client/releases
+- [GitHub](https://github.com/grandiloquent/91porn-client/releases)
+- [国内](https://lucidu.cn/api/obs/HuaYuan.apk)
 
 ## 格式
 
