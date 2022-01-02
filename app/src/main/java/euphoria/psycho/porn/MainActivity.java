@@ -2,6 +2,8 @@ package euphoria.psycho.porn;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +15,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Process;
 import android.os.StrictMode;
@@ -36,17 +39,26 @@ import android.widget.SearchView;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import euphoria.psycho.porn.Shared.Listener;
 import euphoria.psycho.porn.tasks.DownloaderService;
 
 import static android.view.MenuItem.SHOW_AS_ACTION_ALWAYS;
 import static android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM;
+import static euphoria.psycho.porn.Shared.closeQuietly;
+import static euphoria.psycho.porn.Shared.getExternalStoragePath;
 import static euphoria.psycho.porn.Shared.requestStoragePremissions;
 
 public class MainActivity extends Activity {
@@ -77,7 +89,20 @@ public class MainActivity extends Activity {
         context.startActivity(starter);
     }
 
-
+    private void askUpdate(VersionInfo versionInfo) {
+        AlertDialog dialog = new Builder(this)
+                .setTitle("询问")
+                .setMessage("程序有新版本是否更新？")
+                .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
+                    dialogInterface.dismiss();
+                    performUpdate(versionInfo);
+                }).setNegativeButton(android.R.string.cancel, (dialogInterface, which) -> {
+                    dialogInterface.dismiss();
+                })
+                .create();
+        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        dialog.show();
+    }
 
     private void checkUpdate() {
         new Thread(() -> {
@@ -87,9 +112,10 @@ public class MainActivity extends Activity {
                 PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
                 int version = pInfo.versionCode;
                 if (versionInfo.versionCode > version) {
+                    runOnUiThread(() -> askUpdate(versionInfo));
                 }
-            } catch (NameNotFoundException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                Log.e("B5aOx2", String.format("checkUpdate, %s", e.getMessage()));
             }
         }).start();
 
@@ -107,6 +133,37 @@ public class MainActivity extends Activity {
             e.printStackTrace();
         }
         return versionInfo;
+    }
+
+    private void performUpdate(VersionInfo versionInfo) {
+        File f = new File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "HuaYuan.apk");
+        ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setMessage("下载中...");
+        dialog.show();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+                HttpsURLConnection c = null;
+                try {
+                    c = (HttpsURLConnection) new URL(versionInfo.downloadLink).openConnection();
+                    FileOutputStream fos = new FileOutputStream(
+                            f
+                    );
+                    Shared.copy(c.getInputStream(), fos);
+                    closeQuietly(fos);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.dismiss();
+                        Shared.installPackage(MainActivity.this, f);
+                    }
+                });
+            }
+        }).start();
     }
 
     private void setUpCookie() {
