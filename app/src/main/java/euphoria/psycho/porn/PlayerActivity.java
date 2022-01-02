@@ -20,6 +20,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewConfiguration;
 import android.widget.Button;
@@ -34,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Formatter;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -491,8 +493,10 @@ public class PlayerActivity extends Activity implements OnTouchListener {
         mPlayPause.setOnClickListener(this::onPlayPause);
         mScaledTouchSlop = ViewConfiguration.get(this).getScaledTouchSlop();
         //mTextureView.setOnTouchListener(this);
+
         ImageButton prev = findViewById(R.id.prev);
         ImageButton next = findViewById(R.id.next);
+       findViewById(R.id.action_shuffle).setOnClickListener(v -> Collections.shuffle(mPlayList));
         String videoFile = getIntent().getStringExtra(KEY_VIDEO_FILE);
         if (videoFile != null) {
             loadPlaylist(new File(videoFile).getParentFile().getAbsolutePath());
