@@ -9,4 +9,5 @@
     <string name="video">Video</string>
     <string name="set_up">Set up</string>
     <string name="help">Help</string>
+    <string name="send_video">Send video</string>
 </resources>

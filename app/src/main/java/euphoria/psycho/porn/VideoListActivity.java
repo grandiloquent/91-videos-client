@@ -28,12 +28,38 @@ import java.util.Set;
 
 import euphoria.psycho.porn.Shared.Listener;
 
-// FileListActivity
 public class VideoListActivity extends Activity {
     private static final String KEY_FAVORITES_LIST = "key_favorites_list";
     private GridView mGridView;
     private VideoItemAdapter mVideoItemAdapter;
     private String mDirectory;
+
+    private void addBookmark() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        Set<String> strings = preferences.getStringSet(KEY_FAVORITES_LIST, new HashSet<>());
+        Set<String> newStrings = new HashSet<>(strings);
+        newStrings.add(mDirectory);
+        preferences.edit().putStringSet(KEY_FAVORITES_LIST, newStrings).apply();
+    }
+
+    private void createFileDirectory() {
+        Shared.openTextContentDialog(this, getString(R.string.create_a_directory), new Listener() {
+            @Override
+            public void onSuccess(String value) {
+                File dir = new File(mDirectory, value.trim());
+                if (!dir.isDirectory())
+                    dir.mkdir();
+            }
+        });
+    }
+
+    private void deleteBookmark() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        Set<String> strings = preferences.getStringSet(KEY_FAVORITES_LIST, new HashSet<>());
+        Set<String> newStrings = new HashSet<>(strings);
+        newStrings.remove(mDirectory);
+        preferences.edit().putStringSet(KEY_FAVORITES_LIST, newStrings).apply();
+    }
 
     private String getDefaultPath() {
         return getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
@@ -74,6 +100,18 @@ public class VideoListActivity extends Activity {
         mVideoItemAdapter.updateVideos(videoItems);
     }
 
+    private void showBookmarks() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String[] strings = preferences.getStringSet(KEY_FAVORITES_LIST, new HashSet<>()).toArray(new String[0]);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setItems(strings, (dialog, which) -> {
+            mDirectory = strings[which];
+            loadDirectory();
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -104,34 +142,12 @@ public class VideoListActivity extends Activity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.video_list, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-        menu.add(0, 0, 0, R.string.share);
-        File[] directories = new File(mDirectory).listFiles(File::isDirectory);
-        for (int i = 0; i < directories.length; i++) {
-            menu.add(0, i + 1, 0, directories[i].getName());
-        }
-        super.onCreateContextMenu(menu, v, menuInfo);
-    }
-
-    @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterContextMenuInfo contextMenuInfo = (AdapterContextMenuInfo) item.getMenuInfo();
         VideoItem videoItem = mVideoItemAdapter.getItem(contextMenuInfo.position);
         if (item.getItemId() == 0) {
-            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
-            StrictMode.setVmPolicy(builder.build());
             File file = new File(videoItem.path);
-            Intent shareIntent = new Intent();
-            shareIntent.setAction(Intent.ACTION_SEND);
-            shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
-            shareIntent.setType("video/*");
-            startActivity(Intent.createChooser(shareIntent, "发送视频"));
+            Shared.shareFile(this, file, getString(R.string.send_video));
         } else {
             File dir = new File(mDirectory, item.getTitle().toString());
             File f = new File(videoItem.path);
@@ -142,48 +158,44 @@ public class VideoListActivity extends Activity {
     }
 
     @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+        menu.add(0, 0, 0, R.string.share);
+        File[] directories = new File(mDirectory).listFiles(File::isDirectory);
+        if (directories != null) {
+            for (int i = 0; i < directories.length; i++) {
+                menu.add(0, i + 1, 0, directories[i].getName());
+            }
+        }
+        super.onCreateContextMenu(menu, v, menuInfo);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.video_list, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_selector) {
             Intent starter = new Intent(this, FileListActivity.class);
             startActivityForResult(starter, 0);
         } else if (item.getItemId() == R.id.action_fav) {
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-            Set<String> strings = preferences.getStringSet(KEY_FAVORITES_LIST, new HashSet<>());
-            Set<String> newStrings = new HashSet<>(strings);
-            newStrings.add(mDirectory);
-            preferences.edit().putStringSet(KEY_FAVORITES_LIST, newStrings).apply();
+            addBookmark();
         } else if (item.getItemId() == R.id.action_favorite_border) {
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-            Set<String> strings = preferences.getStringSet(KEY_FAVORITES_LIST, new HashSet<>());
-            Set<String> newStrings = new HashSet<>(strings);
-            newStrings.remove(mDirectory);
-            preferences.edit().putStringSet(KEY_FAVORITES_LIST, newStrings).apply();
+            deleteBookmark();
         } else if (item.getItemId() == R.id.action_bookmark) {
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-            String[] strings = preferences.getStringSet(KEY_FAVORITES_LIST, new HashSet<>()).toArray(new String[0]);
-            // setup the alert builder
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setItems(strings, (dialog, which) -> {
-                mDirectory = strings[which];
-                loadDirectory();
-            });
-            AlertDialog dialog = builder.create();
-            dialog.show();
+            showBookmarks();
         } else if (item.getItemId() == android.R.id.home) {
             finish();
         } else if (item.getItemId() == R.id.action_video) {
             mDirectory = getDefaultPath();
             loadDirectory();
         } else if (item.getItemId() == R.id.action_create_directory) {
-            Shared.openTextContentDialog(this, getString(R.string.create_a_directory), new Listener() {
-                @Override
-                public void onSuccess(String value) {
-                    File dir = new File(mDirectory, value.trim());
-                    if (!dir.isDirectory())
-                        dir.mkdir();
-                }
-            });
+            createFileDirectory();
         }
         return super.onOptionsItemSelected(item);
     }
+
+
 }
