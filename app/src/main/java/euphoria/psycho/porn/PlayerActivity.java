@@ -493,10 +493,9 @@ public class PlayerActivity extends Activity implements OnTouchListener {
         mPlayPause.setOnClickListener(this::onPlayPause);
         mScaledTouchSlop = ViewConfiguration.get(this).getScaledTouchSlop();
         //mTextureView.setOnTouchListener(this);
-
         ImageButton prev = findViewById(R.id.prev);
         ImageButton next = findViewById(R.id.next);
-       findViewById(R.id.action_shuffle).setOnClickListener(v -> Collections.shuffle(mPlayList));
+        findViewById(R.id.action_shuffle).setOnClickListener(v -> Collections.shuffle(mPlayList));
         String videoFile = getIntent().getStringExtra(KEY_VIDEO_FILE);
         if (videoFile != null) {
             loadPlaylist(new File(videoFile).getParentFile().getAbsolutePath());

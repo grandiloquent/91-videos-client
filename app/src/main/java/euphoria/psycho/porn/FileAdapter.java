@@ -3,6 +3,7 @@ package euphoria.psycho.porn;
 import android.content.Context;
 import android.content.Loader;
 import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,14 +46,16 @@ public class FileAdapter extends BaseAdapter {
             }
         } else {
             File[] files = mDirectory.listFiles(pathname -> pathname.isDirectory() || pathname.getName().endsWith(".mp4"));
+            Log.e("B5aOx2", String.format("setDirectory, %s", mDirectory));
             if (files != null) {
                 Arrays.sort(files, (o1, o2) -> {
                     if (o1.isDirectory() && o2.isFile()) {
-                        return 1;
+                        return -1;
                     } else if (o1.isFile() && o2.isDirectory()) {
-                        return 0;
+                        return 1;
                     } else {
                         return o1.getName().compareTo(o2.getName());
+
                     }
                 });
                 for (File f : files) {

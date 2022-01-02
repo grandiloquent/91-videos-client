@@ -172,6 +172,8 @@ public class VideoListActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.video_list, menu);
+        menu.findItem(R.id.action_selector).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        menu.findItem(R.id.action_bookmark).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
         return super.onCreateOptionsMenu(menu);
     }
 
