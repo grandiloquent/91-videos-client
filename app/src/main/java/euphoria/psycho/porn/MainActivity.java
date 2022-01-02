@@ -59,6 +59,7 @@ import static android.view.MenuItem.SHOW_AS_ACTION_ALWAYS;
 import static android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM;
 import static euphoria.psycho.porn.Shared.closeQuietly;
 import static euphoria.psycho.porn.Shared.getExternalStoragePath;
+import static euphoria.psycho.porn.Shared.installPackage;
 import static euphoria.psycho.porn.Shared.requestStoragePremissions;
 
 public class MainActivity extends Activity {
@@ -115,7 +116,6 @@ public class MainActivity extends Activity {
                     runOnUiThread(() -> askUpdate(versionInfo));
                 }
             } catch (Exception e) {
-                Log.e("B5aOx2", String.format("checkUpdate, %s", e.getMessage()));
             }
         }).start();
 
@@ -140,29 +140,26 @@ public class MainActivity extends Activity {
         ProgressDialog dialog = new ProgressDialog(this);
         dialog.setMessage("下载中...");
         dialog.show();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-                HttpsURLConnection c = null;
-                try {
-                    c = (HttpsURLConnection) new URL(versionInfo.downloadLink).openConnection();
-                    FileOutputStream fos = new FileOutputStream(
-                            f
-                    );
-                    Shared.copy(c.getInputStream(), fos);
-                    closeQuietly(fos);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        dialog.dismiss();
-                        Shared.installPackage(MainActivity.this, f);
-                    }
-                });
+        new Thread(() -> {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            HttpsURLConnection c;
+            try {
+                c = (HttpsURLConnection) new URL(versionInfo.downloadLink).openConnection();
+                FileOutputStream fos = new FileOutputStream(
+                        f
+                );
+                Shared.copy(c.getInputStream(), fos);
+                closeQuietly(fos);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    dialog.dismiss();
+                    Shared.installPackage(MainActivity.this, f);
+                }
+            });
         }).start();
     }
 
