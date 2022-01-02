@@ -5,10 +5,17 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Process;
+import android.os.StrictMode;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -26,6 +33,9 @@ import android.widget.PopupWindow;
 import android.widget.SearchView;
 
 
+import org.json.JSONObject;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +54,60 @@ public class MainActivity extends Activity {
     private WebView mWebView;
     private BottomSheetLayout mRoot;
 
+    public boolean onQueryTextSubmit(String query) {
+        // https://v.douyin.com/8kSH3tK
+        if (Utils.getDouYinVideo(this, query)) {
+            return true;
+        }
+        if (Utils.getKuaiShouVideo(this, query)) {
+            return true;
+        }
+        mWebView.loadUrl(query);
+        return true;
+    }
+
+    public static void start(Context context, String videoAddress) {
+        Intent starter = new Intent(context, DownloaderService.class);
+        starter.putExtra(DownloaderService.EXTRA_VIDEO_ADDRESS, videoAddress);
+        context.startService(starter);
+    }
+
+    private static void startVideoList(Context context) {
+        Intent starter = new Intent(context, VideoListActivity.class);
+        context.startActivity(starter);
+    }
+
+
+
+    private void checkUpdate() {
+        new Thread(() -> {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            VersionInfo versionInfo = getVersionInformation();
+            try {
+                PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+                int version = pInfo.versionCode;
+                if (versionInfo.versionCode > version) {
+                }
+            } catch (NameNotFoundException e) {
+                e.printStackTrace();
+            }
+        }).start();
+
+    }
+
+    private VersionInfo getVersionInformation() {
+        VersionInfo versionInfo = new VersionInfo();
+        try {
+            String response = Shared.getString("https://www.hxz315.com/version.json", null, false, false).contents;
+            JSONObject object = new JSONObject(response);
+            object = object.getJSONObject("Secret Garden");
+            versionInfo.versionCode = object.getInt("VersionCode");
+            versionInfo.downloadLink = object.getString("DownloadLink");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return versionInfo;
+    }
 
     private void setUpCookie() {
         CookieManager cookieManager = CookieManager.getInstance();
@@ -91,13 +155,16 @@ public class MainActivity extends Activity {
         mWebView.loadUrl("http://47.106.105.122");
         //start(this, "http://937ck.us/vodplay/16302-1-1.html");
         startService(new Intent(this, DownloaderService.class));
-
+        checkUpdate();
     }
 
-    public static void start(Context context, String videoAddress) {
-        Intent starter = new Intent(context, DownloaderService.class);
-        starter.putExtra(DownloaderService.EXTRA_VIDEO_ADDRESS, videoAddress);
-        context.startService(starter);
+    @Override
+    public void onBackPressed() {
+        if (mWebView.canGoBack()) {
+            mWebView.goBack();
+            return;
+        }
+        super.onBackPressed();
     }
 
     @Override
@@ -151,32 +218,5 @@ public class MainActivity extends Activity {
             mWebView.reload();
         }
         return super.onOptionsItemSelected(item);
-    }
-
-
-    public boolean onQueryTextSubmit(String query) {
-        // https://v.douyin.com/8kSH3tK
-        if (Utils.getDouYinVideo(this, query)) {
-            return true;
-        }
-        if (Utils.getKuaiShouVideo(this, query)) {
-            return true;
-        }
-        mWebView.loadUrl(query);
-        return true;
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (mWebView.canGoBack()) {
-            mWebView.goBack();
-            return;
-        }
-        super.onBackPressed();
-    }
-
-    private static void startVideoList(Context context) {
-        Intent starter = new Intent(context, VideoListActivity.class);
-        context.startActivity(starter);
     }
 }

@@ -77,7 +77,10 @@ import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -1418,5 +1421,68 @@ public class Shared {
     public interface Listener {
         void onSuccess(String value);
     }
+
+    public static HttpResponse getString(String uri, String[][] headers,
+                                         boolean location,
+                                         boolean cookie) throws IOException {
+        URL url = new URL(uri);
+        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36");
+        if (headers != null) {
+            for (String[] header : headers) {
+                urlConnection.setRequestProperty(header[0], header[1]);
+            }
+        }
+        HttpResponse httpResponse = new HttpResponse();
+        urlConnection.setInstanceFollowRedirects(false);
+        Map<String, List<String>> listMap = urlConnection.getHeaderFields();
+        if (cookie) {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Entry<String, List<String>> header : listMap.entrySet()) {
+                if (header.getKey() != null && header.getKey().equalsIgnoreCase("set-cookie")) {
+                    for (String s : header.getValue()) {
+                        stringBuilder.append(Shared.substringBefore(s, "; "))
+                                .append("; ");
+                    }
+                }
+            }
+            httpResponse.cookie = stringBuilder.toString();
+        }
+        if (location) {
+            httpResponse.location = urlConnection.getHeaderField("Location");
+        }
+        int code = urlConnection.getResponseCode();
+        if (code < 400 && code >= 200) {
+            httpResponse.contents = Shared.readString(urlConnection);
+        }
+        return httpResponse;
+    }
+
+    public static void installPackage(Context context, File file) {
+        Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
+        intent.setDataAndType(Uri.fromFile(file),
+                "application/vnd.android.package-archive");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        StrictMode.VmPolicy oldVmPolicy = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            oldVmPolicy = StrictMode.getVmPolicy();
+            StrictMode.VmPolicy policy = new StrictMode.VmPolicy.Builder()
+                    .penaltyLog()
+                    .build();
+            StrictMode.setVmPolicy(policy);
+        }
+        context.startActivity(intent);
+        if (oldVmPolicy != null) {
+            StrictMode.setVmPolicy(oldVmPolicy);
+        }
+    }
+
+    public static class HttpResponse {
+        public String contents;
+        public String location;
+        public String cookie;
+    }
+
+
 }
 
