@@ -81,6 +81,13 @@
             android:orientation="horizontal">
 
             <ImageButton
+                android:id="@+id/action_speed"
+                android:layout_width="@dimen/exo_media_button_width"
+                android:layout_height="@dimen/exo_media_button_height"
+                android:background="?android:attr/selectableItemBackground"
+                android:src="@drawable/exo_ic_speed" />
+
+            <ImageButton
                 android:id="@+id/action_shuffle"
                 android:layout_width="@dimen/exo_media_button_width"
                 android:layout_height="@dimen/exo_media_button_height"

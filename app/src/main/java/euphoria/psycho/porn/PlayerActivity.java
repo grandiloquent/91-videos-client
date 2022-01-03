@@ -11,6 +11,8 @@ import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.media.TimedMetaData;
 import android.opengl.GLES20;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -38,6 +40,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Formatter;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.microedition.khronos.egl.EGL10;
@@ -46,8 +49,12 @@ import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 
+import euphoria.psycho.porn.Shared.Listener;
 import euphoria.psycho.porn.TimeBar.OnScrubListener;
 
+import static euphoria.psycho.porn.PlayerUtils.hideSystemUI;
+import static euphoria.psycho.porn.Shared.getActionBarHeight;
+import static euphoria.psycho.porn.Shared.getNavigationBarHeight;
 import static euphoria.psycho.porn.Shared.getStringForTime;
 
 public class PlayerActivity extends Activity implements OnTouchListener {
@@ -77,13 +84,14 @@ public class PlayerActivity extends Activity implements OnTouchListener {
     private int mDelta = 0;
     private int mCurrentPosition;
     private float mLastFocusX;
+    private int mLastSystemUiVis;
+    private PlayerSizeInformation mPlayerSizeInformation;
 
     public static void launchActivity(Context context, File videoFile) {
         Intent intent = new Intent(context, PlayerActivity.class);
         intent.putExtra(KEY_VIDEO_FILE, videoFile.getAbsolutePath());
         context.startActivity(intent);
     }
-
 
     static int calculateScreenOrientation(Activity activity) {
         int displayRotation = getDisplayRotation(activity);
@@ -239,17 +247,10 @@ public class PlayerActivity extends Activity implements OnTouchListener {
         mTimeBar.setVisibility(View.GONE);
         mBottomBar.setVisibility(View.GONE);
         mCenterControls.setVisibility(View.GONE);
+        hideSystemUI(this);
+        zoomIn();
     }
 
-    private void hideSystemUI() {
-        mRoot.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                View.SYSTEM_UI_FLAG_LOW_PROFILE |
-                View.SYSTEM_UI_FLAG_FULLSCREEN |
-                View.SYSTEM_UI_FLAG_IMMERSIVE);
-    }
 
     private void initializePlayer() {
         mMediaPlayer = new MediaPlayer();
@@ -355,12 +356,7 @@ public class PlayerActivity extends Activity implements OnTouchListener {
     }
 
     private void onVideoSizeChanged(MediaPlayer mediaPlayer, int videoWidth, int videoHeight) {
-        double ratio = mRoot.getMeasuredWidth() / (videoWidth * 1.0);
-        int height = (int) (ratio * videoHeight);
-        int top = (mRoot.getMeasuredHeight() - height) >> 1;
-        FrameLayout.LayoutParams layoutParams = new LayoutParams(mRoot.getMeasuredWidth(), height);
-        layoutParams.topMargin = top;
-        mTextureView.setLayoutParams(layoutParams);
+        zoomIn();
     }
 
     private void play() throws IOException {
@@ -372,6 +368,28 @@ public class PlayerActivity extends Activity implements OnTouchListener {
     private void scheduleHideControls() {
         mHandler.removeCallbacks(mHideAction);
         mHandler.postDelayed(mHideAction, DEFAULT_HIDE_TIME_DELAY);
+    }
+
+    private void setOnSystemUiVisibilityChangeListener() {
+        // When the user touches the screen or uses some hard key, the framework
+        // will change system ui visibility from invisible to visible. We show
+        // the media control and enable system UI (e.g. ActionBar) to be visible at this point
+        getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(
+                new View.OnSystemUiVisibilityChangeListener() {
+
+                    @Override
+                    public void onSystemUiVisibilityChange(int visibility) {
+                        int diff = mLastSystemUiVis ^ visibility;
+                        mLastSystemUiVis = visibility;
+                        if ((diff & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) != 0
+                                && (visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0) {
+                            showControls();
+                            getActionBar().show();
+                            scheduleHideControls();
+                            zoomOut();
+                        }
+                    }
+                });
     }
 
     private void showControls() {
@@ -390,6 +408,77 @@ public class PlayerActivity extends Activity implements OnTouchListener {
         mHandler.postDelayed(this::updateProgress, 1000);
     }
 
+    private void zoomIn() {
+        if (mMediaPlayer == null) {
+            return;
+        }
+        if (mPlayerSizeInformation == null) {
+            mPlayerSizeInformation = new PlayerSizeInformation(this, mRoot, mBottomBar, mTimeBar);
+        }
+        int orientation = getResources().getConfiguration().orientation;
+        if (orientation == 1) {
+            int videoHeight = mMediaPlayer.getVideoHeight();
+            int videoWidth = mMediaPlayer.getVideoWidth();
+            double ratio = mRoot.getMeasuredWidth() / (videoWidth * 1.0);
+            int height = (int) (ratio * videoHeight);
+            int top = (mRoot.getMeasuredHeight() - height) >> 1;
+            FrameLayout.LayoutParams layoutParams = new LayoutParams(mRoot.getMeasuredWidth(), height);
+            layoutParams.topMargin = top;
+            mTextureView.setLayoutParams(layoutParams);
+        } else {
+            int videoHeight = mMediaPlayer.getVideoHeight();
+            int videoWidth = mMediaPlayer.getVideoWidth();
+            float x = ((float) mPlayerSizeInformation.getAvailableHeight()) / videoWidth;
+            float y = ((float) mPlayerSizeInformation.getAvailableWidth()) / videoHeight;
+            x = Math.min(x, y);
+            int screenWidth = (int) (videoWidth * x);
+            int screenHeight = (int) (videoHeight * x);
+            FrameLayout.LayoutParams layoutParams = new LayoutParams(screenWidth, screenHeight);
+            layoutParams.topMargin = (mPlayerSizeInformation.getAvailableWidth() - screenHeight) >> 1;
+            layoutParams.leftMargin = (mPlayerSizeInformation.getAvailableHeight() - screenWidth) >> 1;
+            mTextureView.setLayoutParams(layoutParams);
+        }
+
+    }
+
+    private void zoomOut() {
+        if (mMediaPlayer == null) {
+            return;
+        }
+        if (mPlayerSizeInformation == null) {
+            mPlayerSizeInformation = new PlayerSizeInformation(this, mRoot, mBottomBar, mTimeBar);
+        }
+        int orientation = getResources().getConfiguration().orientation;
+        if (orientation == 1) {
+            mPlayerSizeInformation = new PlayerSizeInformation(this, mRoot, mBottomBar, mTimeBar);
+            int videoHeight = mMediaPlayer.getVideoHeight();
+            int videoWidth = mMediaPlayer.getVideoWidth();
+            float x = ((float) mPlayerSizeInformation.getAvailableWidth()) / videoWidth;
+            float y = ((float) mPlayerSizeInformation.getPortraitHeight()) / videoHeight;
+            x = Math.min(x, y);
+            int screenWidth = (int) (videoWidth * x);
+            int screenHeight = (int) (videoHeight * x);
+            FrameLayout.LayoutParams layoutParams = new LayoutParams(screenWidth, screenHeight);
+            layoutParams.topMargin = (mPlayerSizeInformation.getPortraitHeight() - screenHeight) >> 1;
+            layoutParams.leftMargin = (mPlayerSizeInformation.getAvailableWidth() - screenWidth) >> 1;
+            mTextureView.setLayoutParams(layoutParams);
+        } else {
+            int videoHeight = mMediaPlayer.getVideoHeight();
+            int videoWidth = mMediaPlayer.getVideoWidth();
+            float x = ((float) mPlayerSizeInformation.getAvailableHeight()) / videoWidth;
+            float y = ((float) mPlayerSizeInformation.getLandscapeHeight()) / videoHeight;
+            x = Math.min(x, y);
+            int screenWidth = (int) (videoWidth * x);
+            int screenHeight = (int) (videoHeight * x);
+            FrameLayout.LayoutParams layoutParams = new LayoutParams(screenWidth, screenHeight);
+            layoutParams.topMargin = (mPlayerSizeInformation.getLandscapeHeight() - screenHeight - mPlayerSizeInformation.getNavigationBarLanscapeHeight()) >> 1;
+            layoutParams.leftMargin = (mPlayerSizeInformation.getAvailableHeight() - screenWidth) >> 1;
+            mTextureView.setLayoutParams(layoutParams);
+        }
+
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -397,27 +486,30 @@ public class PlayerActivity extends Activity implements OnTouchListener {
         bindingDeleteVideoEvent();
         bindingFullScreenEvent();
         mRoot = findViewById(R.id.root);
-        mRoot.setOnClickListener(v -> {
-            showControls();
-            scheduleHideControls();
-        });
-        hideSystemUI();
-        View decorView = getWindow().getDecorView();
-        decorView.setOnSystemUiVisibilityChangeListener
-                (visibility -> {
-                    // Note that system bars will only be "visible" if none of the
-                    // LOW_PROFILE, HIDE_NAVIGATION, or FULLSCREEN flags are set.
-                    if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-                        // TODO: The system bars are visible. Make any desired
-                        // adjustments to your UI, such as showing the action bar or
-                        // other navigational controls.
-                        mHandler.postDelayed(this::hideSystemUI, DEFAULT_HIDE_TIME_DELAY);
-                    } else {
-                        // TODO: The system bars are NOT visible. Make any desired
-                        // adjustments to your UI, such as hiding the action bar or
-                        // other navigational controls.
-                    }
-                });
+//        mRoot.setOnClickListener(v -> {
+//            showSystemUi(true);
+//            showControls();
+//            scheduleHideControls();
+//
+//        });
+        setOnSystemUiVisibilityChangeListener();
+        hideSystemUI(this);
+//        View decorView = getWindow().getDecorView();
+//        decorView.setOnSystemUiVisibilityChangeListener
+//                (visibility -> {
+//                    // Note that system bars will only be "visible" if none of the
+//                    // LOW_PROFILE, HIDE_NAVIGATION, or FULLSCREEN flags are set.
+//                    if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+//                        // TODO: The system bars are visible. Make any desired
+//                        // adjustments to your UI, such as showing the action bar or
+//                        // other navigational controls.
+//                        mHandler.postDelayed(this::hideSystemUI, DEFAULT_HIDE_TIME_DELAY);
+//                    } else {
+//                        // TODO: The system bars are NOT visible. Make any desired
+//                        // adjustments to your UI, such as hiding the action bar or
+//                        // other navigational controls.
+//                    }
+//                });
         mCenterControls = findViewById(R.id.exo_center_controls);
         mTextureView = findViewById(R.id.texture_view);
         mPosition = findViewById(R.id.position);
@@ -465,8 +557,6 @@ public class PlayerActivity extends Activity implements OnTouchListener {
 
         });
         Button rewWithAmount = findViewById(R.id.exo_rew_with_amount);
-        Typeface typeface = getResources().getFont(R.font.roboto_medium_numbers);
-        rewWithAmount.setTypeface(typeface);
         rewWithAmount.setText("10");
         rewWithAmount.setOnClickListener(v -> {
             int dif = mMediaPlayer.getCurrentPosition() - 10000;
@@ -478,8 +568,13 @@ public class PlayerActivity extends Activity implements OnTouchListener {
             updateProgress();
         });
         Button ffwdWithAmount = findViewById(R.id.exo_ffwd_with_amount);
-        ffwdWithAmount.setTypeface(typeface);
         ffwdWithAmount.setText("10");
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            Typeface typeface = null;
+            typeface = getResources().getFont(R.font.roboto_medium_numbers);
+            rewWithAmount.setTypeface(typeface);
+            ffwdWithAmount.setTypeface(typeface);
+        }
         ffwdWithAmount.setOnClickListener(v -> {
             int dif = mMediaPlayer.getCurrentPosition() + 10000;
             if (dif > mMediaPlayer.getDuration()) {
@@ -497,6 +592,28 @@ public class PlayerActivity extends Activity implements OnTouchListener {
         ImageButton next = findViewById(R.id.next);
         findViewById(R.id.action_shuffle).setOnClickListener(v -> Collections.shuffle(mPlayList));
         String videoFile = getIntent().getStringExtra(KEY_VIDEO_FILE);
+        findViewById(R.id.action_speed).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Shared.openTextContentDialog(PlayerActivity.this, "跳转", value -> {
+                    Pattern pattern = Pattern.compile("\\b(\\d+ )+\\d+\\b");
+                    Matcher matcher = pattern.matcher(value);
+                    if (matcher.matches()) {
+                        String[] pieces = value.split(" ");
+                        int total = 0;
+                        for (int i = pieces.length - 1, j = 0; i > -1; i--, j++) {
+                            total += Integer.parseInt(pieces[i]) *  Math.pow(60, j);
+                        }
+                        total *= 1000;
+                        if (VERSION.SDK_INT >= VERSION_CODES.O) {
+                            mMediaPlayer.seekTo(total, MediaPlayer.SEEK_CLOSEST);
+                        } else {
+                            mMediaPlayer.seekTo(total);
+                        }
+                    }
+                });
+            }
+        });
         if (videoFile != null) {
             loadPlaylist(new File(videoFile).getParentFile().getAbsolutePath());
             if (mPlayList.size() < 2) {
@@ -513,6 +630,7 @@ public class PlayerActivity extends Activity implements OnTouchListener {
 
 
     }
+
 
     @Override
     protected void onStart() {
@@ -631,4 +749,5 @@ public class PlayerActivity extends Activity implements OnTouchListener {
             return true;
         }
     }
+
 }

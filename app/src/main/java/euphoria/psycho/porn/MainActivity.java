@@ -8,32 +8,19 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.net.Uri;
-import android.os.Build;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.os.Process;
-import android.os.StrictMode;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
-import android.widget.PopupWindow;
-import android.widget.SearchView;
 
 
 import org.json.JSONObject;
@@ -42,28 +29,24 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import euphoria.psycho.porn.Shared.Listener;
 import euphoria.psycho.porn.tasks.DownloaderService;
 
 import static android.view.MenuItem.SHOW_AS_ACTION_ALWAYS;
 import static android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM;
 import static euphoria.psycho.porn.Shared.closeQuietly;
-import static euphoria.psycho.porn.Shared.getExternalStoragePath;
-import static euphoria.psycho.porn.Shared.installPackage;
 import static euphoria.psycho.porn.Shared.requestStoragePremissions;
 
 public class MainActivity extends Activity {
 
+    public static final String URL = "http://47.106.105.122";
     private WebView mWebView;
     private BottomSheetLayout mRoot;
 
@@ -135,6 +118,15 @@ public class MainActivity extends Activity {
         return versionInfo;
     }
 
+    private void initializeWebView() {
+        mWebView = findViewById(R.id.web_view);
+        mWebView.setWebViewClient(new CustomWebViewClient(this));
+        setUpWebView();
+        setUpJavascriptInterface();
+        setUpCookie();
+        mWebView.loadUrl(URL);
+    }
+
     private void performUpdate(VersionInfo versionInfo) {
         File f = new File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "HuaYuan.apk");
         ProgressDialog dialog = new ProgressDialog(this);
@@ -174,7 +166,7 @@ public class MainActivity extends Activity {
         mWebView.addJavascriptInterface(javaScriptInterface, "JInterface");
     }
 
-    private void setUpWebComponents() {
+    private void setUpWebView() {
         WebSettings settings = mWebView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
@@ -190,26 +182,25 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         requestStoragePremissions(this, false);
         setContentView(R.layout.main_activity);
-        mWebView = findViewById(R.id.web_view);
         mRoot = findViewById(R.id.root);
-        //            String fileName = URLUtil.guessFileName(url, contentDisposition, WebViewShare.getFileType(context, url));
-//            WebViewShare.downloadFile(context, fileName, url, userAgent);
-//        });
-//        WebViewShare.setWebView(webView, Helper.createCacheDirectory(context).getAbsolutePath());
-        mWebView.setWebViewClient(new CustomWebViewClient(this));
-//        webView.setWebChromeClient(new CustomWebChromeClient(context));
-//        webView.setDownloadListener(Helper.getDownloadListener(context));
-        setUpWebComponents();
-        setUpJavascriptInterface();
-        setUpCookie();
+        initializeWebView();
         if (SettingsFragment.getString(this, SettingsFragment.KEY_USER_AGENT, null) == null) {
             String ua = new WebView(this).getSettings().getUserAgentString();
             SettingsFragment.setString(this, SettingsFragment.KEY_USER_AGENT, ua);
         }
-        mWebView.loadUrl("http://47.106.105.122");
-        //start(this, "http://937ck.us/vodplay/16302-1-1.html");
         startService(new Intent(this, DownloaderService.class));
         checkUpdate();
+
+//        if (VERSION.SDK_INT >= VERSION_CODES.O) {
+//            try {
+//                PlayerActivity.launchActivity(this,
+//                        Files.list(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).toPath())
+//                                .findFirst().get().toFile()
+//                );
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 
     @Override
@@ -262,7 +253,7 @@ public class MainActivity extends Activity {
                     Intent starter = new Intent(MainActivity.this, SettingsActivity.class);
                     startActivity(starter);
                 } else {
-                    mWebView.loadUrl("https://lucidu.cn/article/hhoplt");
+                    mWebView.loadUrl("https://hxz315.com");
                 }
                 mRoot.dismissSheet();
             });

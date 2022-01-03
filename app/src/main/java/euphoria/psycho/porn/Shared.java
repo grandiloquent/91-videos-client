@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -1475,6 +1476,26 @@ public class Shared {
         if (oldVmPolicy != null) {
             StrictMode.setVmPolicy(oldVmPolicy);
         }
+    }
+
+
+    public static int getActionBarHeight(Context context) {
+        TypedValue tv = new TypedValue();
+        if (context.getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
+            return TypedValue.complexToDimensionPixelSize(tv.data,
+                    context.getResources().getDisplayMetrics());
+        }
+        return 0;
+    }
+
+    public static int getNavigationBarHeight(Context context, int orientation) {
+        int id = context.getResources().getIdentifier(
+                orientation == Configuration.ORIENTATION_PORTRAIT ? "navigation_bar_height" : "navigation_bar_height_landscape",
+                "dimen", "android");
+        if (id > 0) {
+            return context.getResources().getDimensionPixelSize(id);
+        }
+        return 0;
     }
 
     public static class HttpResponse {
