@@ -9,8 +9,8 @@ android {
         applicationId "euphoria.psycho.porn"
         minSdk 23
         targetSdk 31
-        versionCode 5
-        versionName "1.0.5"
+        versionCode 6
+        versionName "1.0.6"
         ndk {
             // Don't package arm64-v8a or x86_64 , 'x86' 'armeabi-v7a',
             abiFilters 'arm64-v8a'
