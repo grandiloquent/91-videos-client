@@ -65,6 +65,7 @@ public class FileAdapter extends BaseAdapter {
 
         }
         notifyDataSetChanged();
+
     }
 
     @Override

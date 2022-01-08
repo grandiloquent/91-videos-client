@@ -15,6 +15,7 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -86,6 +87,8 @@ public class PlayerActivity extends Activity implements OnTouchListener {
     private float mLastFocusX;
     private int mLastSystemUiVis;
     private PlayerSizeInformation mPlayerSizeInformation;
+    private boolean mShuffle;
+
 
     public static void launchActivity(Context context, File videoFile) {
         Intent intent = new Intent(context, PlayerActivity.class);
@@ -280,6 +283,9 @@ public class PlayerActivity extends Activity implements OnTouchListener {
         mPlayList = new ArrayList<>();
         for (File file : files) {
             mPlayList.add(file.getAbsolutePath());
+        }
+        if (mShuffle) {
+            Collections.shuffle(mPlayList);
         }
     }
 
@@ -479,6 +485,8 @@ public class PlayerActivity extends Activity implements OnTouchListener {
 
     }
 
+    public static final String KEY_SHUFFLE = "shuffle";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -590,7 +598,21 @@ public class PlayerActivity extends Activity implements OnTouchListener {
         //mTextureView.setOnTouchListener(this);
         ImageButton prev = findViewById(R.id.prev);
         ImageButton next = findViewById(R.id.next);
-        findViewById(R.id.action_shuffle).setOnClickListener(v -> Collections.shuffle(mPlayList));
+        mShuffle = PreferenceManager.getDefaultSharedPreferences(this)
+                .getBoolean(KEY_SHUFFLE, false);
+        findViewById(R.id.action_shuffle).setOnClickListener(v -> {
+            if (!mShuffle) {
+                Collections.shuffle(mPlayList);
+                mPlayIndex = mPlayList.indexOf(mPlayList.get(mPlayIndex));
+            }
+            mShuffle = !mShuffle;
+            PreferenceManager
+                    .getDefaultSharedPreferences(this)
+                    .edit()
+                    .putBoolean(KEY_SHUFFLE, mShuffle)
+                    .apply();
+
+        });
         String videoFile = getIntent().getStringExtra(KEY_VIDEO_FILE);
         findViewById(R.id.action_speed).setOnClickListener(new OnClickListener() {
             @Override
@@ -602,7 +624,7 @@ public class PlayerActivity extends Activity implements OnTouchListener {
                         String[] pieces = value.split(" ");
                         int total = 0;
                         for (int i = pieces.length - 1, j = 0; i > -1; i--, j++) {
-                            total += Integer.parseInt(pieces[i]) *  Math.pow(60, j);
+                            total += Integer.parseInt(pieces[i]) * Math.pow(60, j);
                         }
                         total *= 1000;
                         if (VERSION.SDK_INT >= VERSION_CODES.O) {
