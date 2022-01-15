@@ -229,9 +229,6 @@ public class PlayerActivity extends Activity implements OnTouchListener {
             int left = (mRoot.getMeasuredHeight() - width) >> 1;
             FrameLayout.LayoutParams layoutParams = new LayoutParams(width, getResources().getDisplayMetrics().widthPixels);
             layoutParams.leftMargin = left;
-//        Log.e("B5aOx2", String.format("onActionFullscreen, mMediaPlayer.getVideoWidth() = %s;\n mMediaPlayer.getVideoHeight() = %s;\n getResources().getDisplayMetrics().widthPixels = %s;\n getResources().getDisplayMetrics().heightPixels = %s;\n mRoot.getMeasuredWidth() = %s;\n mRoot.getMeasuredHeight() = %s;\n ratio = %s\n left = %s",
-//                mMediaPlayer.getVideoWidth(), mMediaPlayer.getVideoHeight(), getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels, mRoot.getMeasuredWidth(), mRoot.getMeasuredHeight(), ratio, left
-//        ));
             mTextureView.setLayoutParams(layoutParams);
         } else {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
@@ -294,6 +291,12 @@ public class PlayerActivity extends Activity implements OnTouchListener {
     }
 
     private void onCompletion(MediaPlayer mediaPlayer) {
+        mMediaPlayer.reset();
+        try {
+            play();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
@@ -477,9 +480,10 @@ public class PlayerActivity extends Activity implements OnTouchListener {
             int screenWidth = (int) (videoWidth * x);
             int screenHeight = (int) (videoHeight * x);
             FrameLayout.LayoutParams layoutParams = new LayoutParams(screenWidth, screenHeight);
-            layoutParams.topMargin = (mPlayerSizeInformation.getLandscapeHeight() - screenHeight - mPlayerSizeInformation.getNavigationBarLanscapeHeight()) >> 1;
-            layoutParams.leftMargin = (mPlayerSizeInformation.getAvailableHeight() - screenWidth) >> 1;
+            layoutParams.topMargin =(mPlayerSizeInformation.getLandscapeHeight() - screenHeight ) >> 1;
+            layoutParams.leftMargin =(mPlayerSizeInformation.getAvailableHeight() - screenWidth- mPlayerSizeInformation.getNavigationBarLanscapeHeight()) >> 1;
             mTextureView.setLayoutParams(layoutParams);
+            //Log.e("B5aOx2", String.format("zoomOut, %s", mPlayerSizeInformation.toString()));
         }
 
 
@@ -571,13 +575,17 @@ public class PlayerActivity extends Activity implements OnTouchListener {
             if (dif < 0) {
                 dif = 0;
             }
-            mMediaPlayer.seekTo(dif);
+            if (VERSION.SDK_INT >= VERSION_CODES.O) {
+                mMediaPlayer.seekTo(dif, MediaPlayer.SEEK_CLOSEST);
+            } else {
+                mMediaPlayer.seekTo(dif);
+            }
             scheduleHideControls();
             updateProgress();
         });
         Button ffwdWithAmount = findViewById(R.id.exo_ffwd_with_amount);
         ffwdWithAmount.setText("10");
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (VERSION.SDK_INT >= VERSION_CODES.O) {
             Typeface typeface = null;
             typeface = getResources().getFont(R.font.roboto_medium_numbers);
             rewWithAmount.setTypeface(typeface);
@@ -588,7 +596,11 @@ public class PlayerActivity extends Activity implements OnTouchListener {
             if (dif > mMediaPlayer.getDuration()) {
                 dif = mMediaPlayer.getDuration();
             }
-            mMediaPlayer.seekTo(dif);
+            if (VERSION.SDK_INT >= VERSION_CODES.O) {
+                mMediaPlayer.seekTo(dif, MediaPlayer.SEEK_CLOSEST);
+            } else {
+                mMediaPlayer.seekTo(dif);
+            }
             scheduleHideControls();
             updateProgress();
         });
@@ -677,7 +689,6 @@ public class PlayerActivity extends Activity implements OnTouchListener {
     public boolean onTouch(View v, MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN: {
-                Log.e("B5aOx2", String.format("onTouch, %s", "ACTION_DOWN"));
                 mLastFocusX = event.getX();
                 showControls();
                 mMediaPlayer.pause();

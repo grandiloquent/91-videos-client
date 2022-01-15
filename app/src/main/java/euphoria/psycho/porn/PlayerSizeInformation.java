@@ -40,7 +40,7 @@ public class PlayerSizeInformation {
 
 
     public int getLandscapeHeight() {
-        return availableWidth - actionBarHeight - bottomBarHeight - timeBarHeight;
+        return availableWidth - actionBarHeight;// - bottomBarHeight - timeBarHeight;
     }
 
     public int getActionBarHeight() {
