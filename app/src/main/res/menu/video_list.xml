@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-
+    <item
+        android:id="@+id/action_search"
+        android:actionViewClass="android.widget.SearchView"
+        android:icon="@drawable/ic_action_search_white"
+        android:showAsAction="always|collapseActionView"
+        android:title="搜索" />
     <item
         android:id="@+id/action_selector"
         android:icon="@drawable/ic_action_folder_open"
@@ -24,4 +29,18 @@
     <item
         android:id="@+id/action_video"
         android:title="默认视频目录" />
+
+    <item
+        android:id="@+id/action_sort_by_create_time_ascending"
+        android:title="创建时间就↑" />
+    <item
+        android:id="@+id/action_sort_by_create_time_descending"
+        android:title="创建时间就⇣" />
+    <item
+        android:id="@+id/action_sort_by_size_ascending"
+        android:title="大小↑" />
+    <item
+        android:id="@+id/action_sort_by_size_descending"
+        android:title="大小⇣" />
+
 </menu>
