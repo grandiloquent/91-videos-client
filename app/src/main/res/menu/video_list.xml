@@ -32,15 +32,15 @@
 
     <item
         android:id="@+id/action_sort_by_create_time_ascending"
-        android:title="创建时间就↑" />
+        android:title="创建时间↑" />
     <item
         android:id="@+id/action_sort_by_create_time_descending"
-        android:title="创建时间就⇣" />
+        android:title="创建时间↓" />
     <item
         android:id="@+id/action_sort_by_size_ascending"
         android:title="大小↑" />
     <item
         android:id="@+id/action_sort_by_size_descending"
-        android:title="大小⇣" />
+        android:title="大小↓" />
 
 </menu>

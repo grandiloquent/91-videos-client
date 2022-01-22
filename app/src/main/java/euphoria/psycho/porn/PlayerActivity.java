@@ -90,9 +90,10 @@ public class PlayerActivity extends Activity implements OnTouchListener {
     private boolean mShuffle;
 
 
-    public static void launchActivity(Context context, File videoFile) {
+    public static void launchActivity(Context context, File videoFile, int sort) {
         Intent intent = new Intent(context, PlayerActivity.class);
         intent.putExtra(KEY_VIDEO_FILE, videoFile.getAbsolutePath());
+        intent.putExtra("sort", sort);
         context.startActivity(intent);
     }
 
@@ -277,6 +278,29 @@ public class PlayerActivity extends Activity implements OnTouchListener {
         if (files == null) {
             return;
         }
+        int sort = getIntent().getIntExtra("sort", 2);
+        int direction = (sort & 1) == 0 ? -1 : 1;
+        Arrays.sort(files, (o1, o2) -> {
+            if ((sort & 2) == 2) {
+                final long result = o2.lastModified() - o1.lastModified();
+                if (result < 0) {
+                    return -1 * direction;
+                }
+                if (result > 0) {
+                    return 1 * direction;
+                }
+            }
+            if ((sort & 4) == 4) {
+                final long result = o2.length() - o1.length();
+                if (result < 0) {
+                    return -1 * direction;
+                }
+                if (result > 0) {
+                    return 1 * direction;
+                }
+            }
+            return 0;
+        });
         mPlayList = new ArrayList<>();
         for (File file : files) {
             mPlayList.add(file.getAbsolutePath());
@@ -480,8 +504,8 @@ public class PlayerActivity extends Activity implements OnTouchListener {
             int screenWidth = (int) (videoWidth * x);
             int screenHeight = (int) (videoHeight * x);
             FrameLayout.LayoutParams layoutParams = new LayoutParams(screenWidth, screenHeight);
-            layoutParams.topMargin =(mPlayerSizeInformation.getLandscapeHeight() - screenHeight ) >> 1;
-            layoutParams.leftMargin =(mPlayerSizeInformation.getAvailableHeight() - screenWidth- mPlayerSizeInformation.getNavigationBarLanscapeHeight()) >> 1;
+            layoutParams.topMargin = (mPlayerSizeInformation.getLandscapeHeight() - screenHeight) >> 1;
+            layoutParams.leftMargin = (mPlayerSizeInformation.getAvailableHeight() - screenWidth - mPlayerSizeInformation.getNavigationBarLanscapeHeight()) >> 1;
             mTextureView.setLayoutParams(layoutParams);
             //Log.e("B5aOx2", String.format("zoomOut, %s", mPlayerSizeInformation.toString()));
         }

@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -36,6 +37,7 @@ public class VideoListActivity extends Activity {
     private VideoItemAdapter mVideoItemAdapter;
     private String mDirectory;
     private int mSort = 2;
+    private String mFilter;
     public static final String KEY_SORT = "sort";
 
     private void addBookmark() {
@@ -71,17 +73,17 @@ public class VideoListActivity extends Activity {
 
     private void initialize() {
         mDirectory = SettingsFragment.getString(this, SettingsFragment.KEY_VIDEO_FOLDER, getDefaultPath());
-        loadFolder(null, mSort);
+        loadFolder(mFilter, mSort);
     }
 
     private void loadDirectory() {
         SettingsFragment.setString(this, SettingsFragment.KEY_VIDEO_FOLDER, mDirectory);
-        loadFolder(null, mSort);
+        loadFolder(mFilter, mSort);
     }
 
     private void loadFolder(String filter, int sort) {
         File dir = new File(mDirectory);
-        File[] videos = dir.listFiles(pathname -> pathname.isFile() && pathname.getName().endsWith(".mp4") && (filter == null || pathname.getName().contains(filter)));
+        File[] videos = dir.listFiles(pathname -> pathname.isFile() && pathname.getName().endsWith(".mp4") && (TextUtils.isEmpty(filter) || pathname.getName().contains(filter)));
         if (videos == null) {
             return;
         }
@@ -147,7 +149,7 @@ public class VideoListActivity extends Activity {
         mGridView.setAdapter(mVideoItemAdapter);
         mGridView.setOnItemClickListener((parent, view, position, id) -> PlayerActivity.launchActivity(view.getContext(), new File(
                 mVideoItemAdapter.getItem(position).path
-        )));
+        ),mSort));
         getActionBar().setDisplayHomeAsUpEnabled(true);
         initialize();
     }
@@ -156,7 +158,7 @@ public class VideoListActivity extends Activity {
     protected void onResume() {
         super.onResume();
         if (mDirectory != null)
-            loadFolder(null, mSort);
+            loadFolder(mFilter, mSort);
     }
 
     @Override
@@ -170,7 +172,7 @@ public class VideoListActivity extends Activity {
             File dir = new File(mDirectory, item.getTitle().toString());
             File f = new File(videoItem.path);
             f.renameTo(new File(dir, f.getName()));
-            loadFolder(null, mSort);
+            loadFolder(mFilter, mSort);
         }
         return super.onContextItemSelected(item);
     }
@@ -197,7 +199,8 @@ public class VideoListActivity extends Activity {
         searchView.setOnQueryTextListener(new OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                loadFolder(query, mSort);
+                mFilter = query;
+                loadFolder(mFilter, mSort);
                 return true;
             }
 
@@ -249,7 +252,7 @@ public class VideoListActivity extends Activity {
                 .edit()
                 .putInt(KEY_SORT, mSort)
                 .apply();
-        loadFolder(null, mSort);
+        loadFolder(mFilter, mSort);
     }
 
     private void actionSortByCreateTimeAscending() {

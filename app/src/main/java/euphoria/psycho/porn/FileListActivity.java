@@ -40,7 +40,7 @@ public class FileListActivity extends Activity {
             if (file.isDirectory())
                 mFileAdapter.setDirectory(file);
             else
-                PlayerActivity.launchActivity(FileListActivity.this, file);
+                PlayerActivity.launchActivity(FileListActivity.this, file,2);
         });
     }
 
