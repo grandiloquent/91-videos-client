@@ -9,6 +9,7 @@ import android.content.res.Configuration;
 import android.graphics.SurfaceTexture;
 import android.graphics.Typeface;
 import android.media.MediaPlayer;
+import android.media.PlaybackParams;
 import android.media.TimedMetaData;
 import android.opengl.GLES20;
 import android.os.Build.VERSION;
@@ -515,6 +516,8 @@ public class PlayerActivity extends Activity implements OnTouchListener {
 
     public static final String KEY_SHUFFLE = "shuffle";
 
+    private float mSpeed = 1f;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -593,22 +596,26 @@ public class PlayerActivity extends Activity implements OnTouchListener {
 
         });
         Button rewWithAmount = findViewById(R.id.exo_rew_with_amount);
-        rewWithAmount.setText("10");
+        rewWithAmount.setText("2");
         rewWithAmount.setOnClickListener(v -> {
-            int dif = mMediaPlayer.getCurrentPosition() - 10000;
-            if (dif < 0) {
-                dif = 0;
-            }
-            if (VERSION.SDK_INT >= VERSION_CODES.O) {
-                mMediaPlayer.seekTo(dif, MediaPlayer.SEEK_CLOSEST);
-            } else {
-                mMediaPlayer.seekTo(dif);
-            }
+//            int dif = mMediaPlayer.getCurrentPosition() - 10000;
+//            if (dif < 0) {
+//                dif = 0;
+//            }
+//            if (VERSION.SDK_INT >= VERSION_CODES.O) {
+//                mMediaPlayer.seekTo(dif);
+//            } else {
+//                mMediaPlayer.seekTo(dif);
+//            }
+            PlaybackParams playbackParams = new PlaybackParams();
+            mSpeed /= 2;
+            playbackParams.setSpeed(mSpeed);
+            mMediaPlayer.setPlaybackParams(playbackParams);
             scheduleHideControls();
             updateProgress();
         });
         Button ffwdWithAmount = findViewById(R.id.exo_ffwd_with_amount);
-        ffwdWithAmount.setText("10");
+        ffwdWithAmount.setText("2");
         if (VERSION.SDK_INT >= VERSION_CODES.O) {
             Typeface typeface = null;
             typeface = getResources().getFont(R.font.roboto_medium_numbers);
@@ -616,15 +623,24 @@ public class PlayerActivity extends Activity implements OnTouchListener {
             ffwdWithAmount.setTypeface(typeface);
         }
         ffwdWithAmount.setOnClickListener(v -> {
-            int dif = mMediaPlayer.getCurrentPosition() + 10000;
-            if (dif > mMediaPlayer.getDuration()) {
-                dif = mMediaPlayer.getDuration();
+//            int dif = mMediaPlayer.getCurrentPosition() + 10000;
+//            if (dif > mMediaPlayer.getDuration()) {
+//                dif = mMediaPlayer.getDuration();
+//            }
+//            if (VERSION.SDK_INT >= VERSION_CODES.O) {
+//                mMediaPlayer.seekTo(dif);
+//
+//            } else {
+//                mMediaPlayer.seekTo(dif);
+//            }
+            PlaybackParams playbackParams = new PlaybackParams();
+            mSpeed *= 2;
+            if (mSpeed >= 6) {
+                mSpeed = 6;
             }
-            if (VERSION.SDK_INT >= VERSION_CODES.O) {
-                mMediaPlayer.seekTo(dif, MediaPlayer.SEEK_CLOSEST);
-            } else {
-                mMediaPlayer.seekTo(dif);
-            }
+            Log.e("B5aOx2", String.format("onCreate, %s", mSpeed));
+            playbackParams.setSpeed(mSpeed);
+            mMediaPlayer.setPlaybackParams(playbackParams);
             scheduleHideControls();
             updateProgress();
         });

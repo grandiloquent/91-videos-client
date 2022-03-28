@@ -195,7 +195,7 @@ public class MainActivity extends Activity {
 //            try {
 //                PlayerActivity.launchActivity(this,
 //                        Files.list(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).toPath())
-//                                .findFirst().get().toFile()
+//                                .findFirst().get().toFile(),1
 //                );
 //            } catch (IOException e) {
 //                e.printStackTrace();
