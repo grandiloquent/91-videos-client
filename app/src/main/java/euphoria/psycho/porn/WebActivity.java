@@ -122,7 +122,7 @@ public class WebActivity extends Activity {
         if (response == null) {
             return null;
         }
-        return Pair.create("",response);
+        return Pair.create(Shared.substringBefore(Shared.substringBefore(response,"|"),"\n").trim(),Shared.substringAfter(response,'|'));
 //        JSONObject jsonObject = null;
 //        try {
 //            jsonObject = new JSONObject(response);
