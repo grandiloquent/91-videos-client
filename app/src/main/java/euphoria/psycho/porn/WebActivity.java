@@ -124,8 +124,8 @@ public class WebActivity extends Activity {
             return null;
         }
         String src = Shared.substringAfter(response, '|');
-
-        return Pair.create(Shared.substringBefore(Shared.substringBefore(response, "|"), "\n").trim(),    src.replaceAll("\\s+[a-z0-9]+\\s+",""));
+        src = src.replaceAll("\\s+[0-9a-zA-Z]+\\s+", "");
+        return Pair.create(Shared.substringBefore(Shared.substringBefore(response, "|"), "\n").trim(), src);
 //        JSONObject jsonObject = null;
 //        try {
 //            jsonObject = new JSONObject(response);
