@@ -28,6 +28,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Pattern;
 
 import android.os.Process;
 
@@ -41,7 +42,7 @@ public class WebActivity extends Activity {
 
 
     @Override
-    protected void onCreate( Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.web_activity);
         mWebView = findViewById(R.id.web_view);
@@ -122,7 +123,9 @@ public class WebActivity extends Activity {
         if (response == null) {
             return null;
         }
-        return Pair.create(Shared.substringBefore(Shared.substringBefore(response,"|"),"\n").trim(),Shared.substringAfter(response,'|'));
+        String src = Shared.substringAfter(response, '|');
+
+        return Pair.create(Shared.substringBefore(Shared.substringBefore(response, "|"), "\n").trim(),    src.replaceAll("\\s+[a-z0-9]+\\s+",""));
 //        JSONObject jsonObject = null;
 //        try {
 //            jsonObject = new JSONObject(response);
@@ -131,7 +134,7 @@ public class WebActivity extends Activity {
 //            return Pair.create(title, src);
 //        } catch (JSONException ignored) {
 //        }
-      //  return null;
+        //  return null;
     }
 
     public static Pair<String, String> processXVideos(String videoAddress) {
