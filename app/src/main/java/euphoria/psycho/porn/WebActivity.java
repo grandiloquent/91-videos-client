@@ -118,18 +118,20 @@ public class WebActivity extends Activity {
 
     public static Pair<String, String> process91Porn(String videoAddress) {
         String response = Native.fetch91Porn(Uri.parse(videoAddress).getQueryParameter("viewkey"));
+        Log.e("B5aOx2", String.format("process91Porn, %s", response));
         if (response == null) {
             return null;
         }
-        JSONObject jsonObject = null;
-        try {
-            jsonObject = new JSONObject(response);
-            String title = jsonObject.getString("title");
-            String src = jsonObject.getString("videoUri");
-            return Pair.create(title, src);
-        } catch (JSONException ignored) {
-        }
-        return null;
+        return Pair.create("",response);
+//        JSONObject jsonObject = null;
+//        try {
+//            jsonObject = new JSONObject(response);
+//            String title = jsonObject.getString("title");
+//            String src = jsonObject.getString("videoUri");
+//            return Pair.create(title, src);
+//        } catch (JSONException ignored) {
+//        }
+      //  return null;
     }
 
     public static Pair<String, String> processXVideos(String videoAddress) {

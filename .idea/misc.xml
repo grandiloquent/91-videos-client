@@ -14,6 +14,7 @@
         <entry key="..\:/Users/Administrator/Desktop/Resources/SourceCode/SecretGarden/app/src/main/res/layout/dropdown-value.xml" value="0.1431159420289855" />
         <entry key="..\:/Users/Administrator/Desktop/Resources/SourceCode/SecretGarden/app/src/main/res/layout/file_item.xml" value="0.1" />
         <entry key="..\:/Users/Administrator/Desktop/Resources/SourceCode/SecretGarden/app/src/main/res/layout/file_list_activity.xml" value="0.1" />
+        <entry key="..\:/Users/Administrator/Desktop/Resources/SourceCode/SecretGarden/app/src/main/res/layout/icon.xml" value="0.1431159420289855" />
         <entry key="..\:/Users/Administrator/Desktop/Resources/SourceCode/SecretGarden/app/src/main/res/layout/main.xml" value="0.1" />
         <entry key="..\:/Users/Administrator/Desktop/Resources/SourceCode/SecretGarden/app/src/main/res/layout/main_activity.xml" value="0.1" />
         <entry key="..\:/Users/Administrator/Desktop/Resources/SourceCode/SecretGarden/app/src/main/res/layout/middle-controls.xml" value="0.10190217391304347" />
@@ -36,7 +37,7 @@
   <component name="ProjectPlainTextFileTypeManager">
     <file url="file://$PROJECT_DIR$/app/src/main/res/layout/main_activity.xml" />
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_15" project-jdk-name="15" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_15_PREVIEW" project-jdk-name="15" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">

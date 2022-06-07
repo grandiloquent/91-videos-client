@@ -33,6 +33,7 @@ import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import java.io.File;
@@ -207,7 +208,14 @@ public class PlayerActivity extends Activity implements OnTouchListener {
     private void deleteVideo() {
         mMediaPlayer.reset();
         File videoFile = new File(mPlayList.get(mPlayIndex));
-        videoFile.delete();
+        File dir = new File(
+                videoFile.getParentFile(),
+                "videos"
+        );
+        if (!dir.isDirectory()) {
+            dir.mkdir();
+        }
+        videoFile.renameTo(new File(dir, videoFile.getName()));
         loadPlaylist(videoFile.getParentFile().getAbsolutePath());
         if (mPlayList.size() > 0) {
             if (mPlayList.size() - 1 < mPlayIndex) mPlayIndex = 0;
@@ -362,6 +370,9 @@ public class PlayerActivity extends Activity implements OnTouchListener {
         mDuration.setText(getStringForTime(mStringBuilder, mFormatter, mediaPlayer.getDuration()));
         mTimeBar.setDuration(mediaPlayer.getDuration());
         mMediaPlayer.start();
+//        PlaybackParams playbackParams = new PlaybackParams();
+//        playbackParams.setSpeed(mSpeed);
+//        mMediaPlayer.setPlaybackParams(playbackParams);
         mPlayPause.setBackgroundDrawable(getResources().getDrawable(R.drawable.exo_ic_pause_circle_filled));
         updateProgress();
         hiddenControls();
@@ -516,7 +527,7 @@ public class PlayerActivity extends Activity implements OnTouchListener {
 
     public static final String KEY_SHUFFLE = "shuffle";
 
-    private float mSpeed = 1f;
+    private float mSpeed = .5f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -608,7 +619,22 @@ public class PlayerActivity extends Activity implements OnTouchListener {
 //                mMediaPlayer.seekTo(dif);
 //            }
             PlaybackParams playbackParams = new PlaybackParams();
-            mSpeed /= 2;
+//            mSpeed /= 2;
+//            if (mSpeed > 1 && mSpeed < 2) {
+//                mSpeed = 1;
+//            }
+//            Toast.makeText(this, Float.toString(mSpeed), Toast.LENGTH_SHORT).show();
+//            mSpeed -= .5f; //mSpeed >> 1 == 0 ? 1 : mSpeed >> 1;
+//            if (mSpeed <= 0) mSpeed = 1;
+//            playbackParams.setSpeed(mSpeed);
+//            mMediaPlayer.setPlaybackParams(playbackParams);
+            if (mSpeed == .5f) {
+                mSpeed = 20f;
+            } else if (mSpeed == 20f) {
+                mSpeed = 6f;
+            } else if (mSpeed == 6f) {
+                mSpeed = 1f;
+            }
             playbackParams.setSpeed(mSpeed);
             mMediaPlayer.setPlaybackParams(playbackParams);
             scheduleHideControls();
@@ -634,13 +660,12 @@ public class PlayerActivity extends Activity implements OnTouchListener {
 //                mMediaPlayer.seekTo(dif);
 //            }
             PlaybackParams playbackParams = new PlaybackParams();
-            mSpeed *= 2;
-            if (mSpeed >= 6) {
-                mSpeed = 6;
-            }
-            Log.e("B5aOx2", String.format("onCreate, %s", mSpeed));
-            playbackParams.setSpeed(mSpeed);
-            mMediaPlayer.setPlaybackParams(playbackParams);
+            // mSpeed += .5f; //= mSpeed << 1;
+//            if (mSpeed >= 10) {
+//                mSpeed = 6;
+//            }
+//            Toast.makeText(this, Float.toString(mSpeed), Toast.LENGTH_SHORT).show();
+            mMediaPlayer.seekTo(mMediaPlayer.getCurrentPosition() + 30 * 1000);
             scheduleHideControls();
             updateProgress();
         });
