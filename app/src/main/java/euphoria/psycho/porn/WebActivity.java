@@ -6,12 +6,14 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.URLUtil;
 import android.webkit.WebChromeClient;
 import android.webkit.WebChromeClient.CustomViewCallback;
 import android.webkit.WebResourceRequest;
@@ -27,11 +29,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Random;
 import java.util.regex.Pattern;
 
 import android.os.Process;
 
+import euphoria.psycho.porn.Shared.HttpResponse;
 import euphoria.psycho.porn.tasks.DownloaderService;
 
 import static euphoria.psycho.porn.Shared.USER_AGENT;
@@ -117,14 +122,32 @@ public class WebActivity extends Activity {
         mWebView.loadUrl("http://47.106.105.122/video.html");
     }
 
-    public static Pair<String, String> process91Porn(String videoAddress) {
+    /*public static Pair<String, String> process91Porn(String videoAddress) {
         String response = Native.fetch91Porn(Uri.parse(videoAddress).getQueryParameter("viewkey"));
-        Log.e("B5aOx2", String.format("process91Porn, %s", response));
         if (response == null) {
             return null;
         }
         String src = Shared.substringAfter(response, '|');
         src = src.replaceAll("\\s+[0-9a-zA-Z]+\\s+", "");
+        String[] pieces = src.split("\",\"");
+        byte[] bytes = Base64.decode(
+                pieces[0].getBytes(StandardCharsets.UTF_8),
+                Base64.DEFAULT
+        );
+        String xx = new String(bytes);
+        String n = "";
+        for (int i = 0; i < xx.length(); i++) {
+            int x = pieces[1].codePointAt(i % pieces[1].length());
+            n += (char) (xx.codePointAt(i) ^ x);
+        }
+        try {
+            n = new String(Base64.decode(n,
+                    Base64.DEFAULT));
+        } catch (Exception e) {
+            Log.e("B5aOx2", String.format("process91Porn,%s %s", response, e.getMessage()));
+            return null;
+        }
+        src = Shared.substring(n, "src='", "'");
         return Pair.create(Shared.substringBefore(Shared.substringBefore(response, "|"), "\n").trim(), src);
 //        JSONObject jsonObject = null;
 //        try {
@@ -135,6 +158,21 @@ public class WebActivity extends Activity {
 //        } catch (JSONException ignored) {
 //        }
         //  return null;
+    }*/
+    public static Pair<String, String> process91Porn(String videoAddress) {
+        String response = Native.fetch91Porn(Uri.parse(videoAddress).getQueryParameter("viewkey"));
+        if (response == null) {
+            return null;
+        }
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = new JSONObject(response);
+            String title = jsonObject.getString("title");
+            String src = jsonObject.getString("videoUri");
+            return Pair.create(title, src);
+        } catch (JSONException ignored) {
+        }
+        return null;
     }
 
     public static Pair<String, String> processXVideos(String videoAddress) {

@@ -141,6 +141,7 @@ public class DownloaderService extends Service implements RequestListener {
         }
         return tasks;
     }
+
     private Pair<String, String> getVideoInformation(String videoAddress) {
         Pair<String, String> results;
         if (videoAddress.contains("91porn.com")) {
@@ -210,7 +211,7 @@ public class DownloaderService extends Service implements RequestListener {
         new Thread(() -> {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
             Pair<String, String> info = getVideoInformation(videoAddress);
-            if (info != null) {
+            if (info != null && info.second != null) {
                 if (info.second.contains(".mp4")) {
                     mHandler.post(() -> Shared.downloadFile(DownloaderService.this,
                             (info.first == null ? Shared.toHex(info.second.getBytes(StandardCharsets.UTF_8)) : info.first) + ".mp4", info.second, USER_AGENT));

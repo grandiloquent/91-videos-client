@@ -18,6 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -210,5 +211,76 @@ public class Utils {
         }
         Collections.sort(videos, (o1, o2) -> o2.first - o1.first);
         return new String[]{title, Shared.substringBeforeLast(hlsAddress, "/") + "/" + videos.get(0).second};
+    }
+
+    public static String getCookie(String uri, String[][] headers) throws IOException {
+        URL url = new URL(uri);
+        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        if (headers != null) {
+            for (String[] header : headers) {
+                urlConnection.setRequestProperty(header[0], header[1]);
+            }
+        }
+        urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36");
+        urlConnection.setInstanceFollowRedirects(false);
+        for (Entry<String, List<String>> header : urlConnection.getRequestProperties().entrySet()) {
+            Log.e("B5aOx2", String.format("getCookie, %s", header.getKey()));
+        }
+        Map<String, List<String>> listMap = urlConnection.getHeaderFields();
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Entry<String, List<String>> header : listMap.entrySet()) {
+            Log.e("B5aOx2", String.format("getCookie, %s", header.getKey()));
+            if (header.getKey() != null && header.getKey().equalsIgnoreCase("set-cookie")) {
+                for (String s : header.getValue()) {
+                    stringBuilder.append(Shared.substringBefore(s, "; "))
+                            .append("; ");
+                }
+            }
+        }
+        return stringBuilder.toString();
+    }
+
+    public static String getString(String uri, String[][] headers) throws IOException {
+        URL url = new URL(uri);
+        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        if (headers != null) {
+            for (String[] header : headers) {
+                urlConnection.setRequestProperty(header[0], header[1]);
+            }
+        }
+        int code = urlConnection.getResponseCode();
+        if (code < 400 && code >= 200) {
+            return Shared.readString(urlConnection);
+        } else {
+            return null;
+        }
+    }
+
+    public static int findRange(int mask) {
+        int x = 8 - mask;
+        int sum = 0;
+        for (int i = 0; i < x; i++) {
+            sum += Math.pow(2, i);
+        }
+        return sum;
+    }
+
+    public static int findFixedPart(String IPPrefix, int i) {
+        String f = IPPrefix.split("\\.")[i];
+        return Integer.valueOf(f);
+    }
+
+    public static String generateRandomIP(String IPPrefix, Integer mask) {
+        String IP = "";
+        Random r = new Random();
+        if (mask < 8)
+            IP = (findFixedPart(IPPrefix, 0) + r.nextInt(findRange(mask))) + "." + r.nextInt(256) + "." + r.nextInt(256) + "." + r.nextInt(256);
+        else if (mask > 7 && mask < 16)
+            IP = findFixedPart(IPPrefix, 0) + "." + (findFixedPart(IPPrefix, 1) + r.nextInt(findRange(mask - 8))) + "." + r.nextInt(256) + "." + r.nextInt(256);
+        else if (mask > 15 && mask < 24)
+            IP = findFixedPart(IPPrefix, 0) + "." + findFixedPart(IPPrefix, 1) + "." + (findFixedPart(IPPrefix, 2) + r.nextInt(findRange(mask - 16))) + "." + r.nextInt(256);
+        else if (mask > 23 && mask < 33)
+            IP = findFixedPart(IPPrefix, 0) + "." + findFixedPart(IPPrefix, 1) + "." + findFixedPart(IPPrefix, 2) + "." + (findFixedPart(IPPrefix, 3) + r.nextInt(findRange(mask - 24)));
+        return IP;
     }
 }

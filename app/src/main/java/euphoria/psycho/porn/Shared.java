@@ -1113,7 +1113,7 @@ public class Shared {
 
     public static String substringBefore(String string, String delimiter) {
         int index = string.indexOf(delimiter);
-        if (index != -1) return string.substring(0, index + delimiter.length());
+        if (index != -1) return string.substring(0, index);
         return string;
     }
 
