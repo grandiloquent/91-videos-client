@@ -52,8 +52,7 @@ import static euphoria.psycho.porn.Shared.requestStoragePremissions;
 
 public class MainActivity extends Activity {
 
-    // http://47.106.105.122
-    public static final String URL = "http://47.106.105.122/videos.html";
+
     private WebView mWebView;
     private BottomSheetLayout mRoot;
 
@@ -131,7 +130,8 @@ public class MainActivity extends Activity {
         setUpWebView();
         setUpJavascriptInterface();
         setUpCookie();
-        mWebView.loadUrl(URL);
+        Log.e("B5aOx2", String.format("initializeWebView, %s", Native.getUrl()));
+        mWebView.loadUrl(Native.getUrl());
     }
 
     private void performUpdate(VersionInfo versionInfo) {
@@ -196,7 +196,7 @@ public class MainActivity extends Activity {
             SettingsFragment.setString(this, SettingsFragment.KEY_USER_AGENT, ua);
         }
         startService(new Intent(this, DownloaderService.class));
-        checkUpdate();
+       // checkUpdate();
 //        if (VERSION.SDK_INT >= VERSION_CODES.O) {
 //            try {
 //                PlayerActivity.launchActivity(this,

@@ -10,4 +10,8 @@ public class Native {
     public native static String fetchCk(String url, String cookie, String userAgent);
 
     public native static void removeDirectory(String directory);
+
+    public  native static String getUrl();
+
+    public native static String getUri();
 }

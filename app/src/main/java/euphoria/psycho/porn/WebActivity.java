@@ -120,8 +120,7 @@ public class WebActivity extends Activity {
 
             }
         });
-        // http://47.106.105.122
-        mWebView.loadUrl("http://47.106.105.122/x.html");
+        mWebView.loadUrl(Native.getUri());
     }
 
     /*public static Pair<String, String> process91Porn(String videoAddress) {
