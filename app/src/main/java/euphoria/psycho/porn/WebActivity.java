@@ -89,9 +89,10 @@ public class WebActivity extends Activity {
                 return Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
             }
 
+            // Print web terminal information
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                //Log.e("B5aOx2", String.format("onConsoleMessage, %s", consoleMessage.message()));
+                Log.e("B5aOx2", String.format("onConsoleMessage, %s", consoleMessage.message()));
                 return super.onConsoleMessage(consoleMessage);
             }
 
@@ -119,7 +120,8 @@ public class WebActivity extends Activity {
 
             }
         });
-        mWebView.loadUrl("http://47.106.105.122/video.html");
+        // http://47.106.105.122
+        mWebView.loadUrl("http://47.106.105.122/x.html");
     }
 
     /*public static Pair<String, String> process91Porn(String videoAddress) {
@@ -171,6 +173,7 @@ public class WebActivity extends Activity {
             String src = jsonObject.getString("videoUri");
             return Pair.create(title, src);
         } catch (JSONException ignored) {
+            Log.e("B5aOx2", String.format("process91Porn, %s", ignored));
         }
         return null;
     }
@@ -208,7 +211,7 @@ public class WebActivity extends Activity {
             Intent starter = new Intent(WebActivity.this, DownloaderService.class);
             starter.putExtra(DownloaderService.EXTRA_VIDEO_ADDRESS, videoUri);
             WebActivity.this.startService(starter);
-            Toast.makeText(WebActivity.this, "添加新任务：" + title, Toast.LENGTH_SHORT).show();
+            //Toast.makeText(WebActivity.this, "添加新任务：" + title, Toast.LENGTH_SHORT).show();
         }
 
         @JavascriptInterface

@@ -8,11 +8,15 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Process;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,6 +25,10 @@ import android.webkit.CookieManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.SearchView;
+import android.widget.SearchView.OnQueryTextListener;
 
 
 import org.json.JSONObject;
@@ -28,10 +36,8 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +52,8 @@ import static euphoria.psycho.porn.Shared.requestStoragePremissions;
 
 public class MainActivity extends Activity {
 
-    public static final String URL = "http://47.106.105.122";
+    // http://47.106.105.122
+    public static final String URL = "http://47.106.105.122/videos.html";
     private WebView mWebView;
     private BottomSheetLayout mRoot;
 
@@ -190,7 +197,6 @@ public class MainActivity extends Activity {
         }
         startService(new Intent(this, DownloaderService.class));
         checkUpdate();
-
 //        if (VERSION.SDK_INT >= VERSION_CODES.O) {
 //            try {
 //                PlayerActivity.launchActivity(this,
@@ -217,6 +223,55 @@ public class MainActivity extends Activity {
         getMenuInflater().inflate(R.menu.main, menu);
         menu.findItem(R.id.action_menu).setShowAsAction(SHOW_AS_ACTION_ALWAYS);
         menu.findItem(R.id.action_refresh).setShowAsAction(SHOW_AS_ACTION_IF_ROOM);
+        MenuItem menuItem = menu.add(0, 0, 0, "搜索");
+        Drawable drawable = menuItem.getIcon();
+        if (drawable != null) {
+            // If we don't mutate the drawable, then all drawable's with this id will have a color
+            // filter applied to it.
+            drawable.mutate();
+            drawable.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
+            drawable.setAlpha(255);
+        }
+        menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        SearchView searchView = new SearchView(this);
+        searchView.setIconified(true);
+        LinearLayout linearLayout = ((LinearLayout) searchView.getChildAt(0));
+        for (int i = 0; i < linearLayout.getChildCount(); i++) {
+            if (linearLayout.getChildAt(i) instanceof ImageView) {
+                ((ImageView) linearLayout.getChildAt(i))
+                        .setColorFilter(Color.WHITE,
+                                android.graphics.PorterDuff.Mode.SRC_IN);
+            }
+        }
+        searchView.setOnQueryTextListener(new OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                mWebView.findAllAsync(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+        try {
+            Field d = SearchView.class.getDeclaredField("mSearchHintIcon");
+            d.setAccessible(true);
+            Drawable db = (Drawable) d.get(searchView);
+            db.setColorFilter(Color.WHITE,
+                    android.graphics.PorterDuff.Mode.SRC_IN);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        ImageView searchClose = ((ImageView) searchView.findViewById(searchView.getContext().getResources().getIdentifier(
+                "android:id/search_close_btn",
+                null, null
+        )));
+        if (searchClose != null)
+            searchClose.setColorFilter(Color.WHITE,
+                    android.graphics.PorterDuff.Mode.SRC_IN);
+        menuItem.setActionView(searchView);
         return super.onCreateOptionsMenu(menu);
     }
 

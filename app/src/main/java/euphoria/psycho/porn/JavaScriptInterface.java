@@ -38,7 +38,7 @@ public class JavaScriptInterface {
 //        } else {
 //            Shared.downloadFile(mActivity, (title == null ? Shared.toHex(uri.getBytes(StandardCharsets.UTF_8)) : title) + ".mp4", uri, USER_AGENT);
 //        }
-        Toast.makeText(mActivity, "添加新任务：" + title, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(mActivity, "添加新任务：" + title, Toast.LENGTH_SHORT).show();
 
     }
 

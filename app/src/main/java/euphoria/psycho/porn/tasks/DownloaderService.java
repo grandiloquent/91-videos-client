@@ -13,6 +13,7 @@ import android.os.IBinder;
 import android.os.Process;
 import android.util.Log;
 import android.util.Pair;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -123,6 +124,7 @@ public class DownloaderService extends Service implements RequestListener {
         }
         File dir = createDirectory(response);
         createDatabase(new DatabaseParameter(info.first, info.second, response, dir));
+        mHandler.post(() -> Toast.makeText(DownloaderService.this, "成功 " + info.first, Toast.LENGTH_SHORT).show());
     }
 
     private List<Task> createTasks(String response) {
@@ -220,9 +222,12 @@ public class DownloaderService extends Service implements RequestListener {
                 try {
                     createTask(info);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    mHandler.post(() -> Toast.makeText(DownloaderService.this, "失败 " + info.first, Toast.LENGTH_SHORT).show());
                 }
                 checkTask();
+            }else{
+
+                mHandler.post(() -> Toast.makeText(DownloaderService.this, "失败 "+videoAddress, Toast.LENGTH_SHORT).show());
             }
         }).start();
         return super.onStartCommand(intent, flags, startId);
