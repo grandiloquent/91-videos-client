@@ -130,7 +130,6 @@ public class MainActivity extends Activity {
         setUpWebView();
         setUpJavascriptInterface();
         setUpCookie();
-        Log.e("B5aOx2", String.format("initializeWebView, %s", Native.getUrl()));
         mWebView.loadUrl(Native.getUrl());
     }
 
