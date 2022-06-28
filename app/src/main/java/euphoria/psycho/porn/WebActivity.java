@@ -92,7 +92,7 @@ public class WebActivity extends Activity {
             // Print web terminal information
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                Log.e("B5aOx2", String.format("onConsoleMessage, %s", consoleMessage.message()));
+                //Log.e("B5aOx2", String.format("onConsoleMessage, %s", consoleMessage.message()));
                 return super.onConsoleMessage(consoleMessage);
             }
 
@@ -215,6 +215,7 @@ public class WebActivity extends Activity {
 
         @JavascriptInterface
         public void parse(String uri, String id) {
+            Log.e("B5aOx2", String.format("parse, %s", uri));
             new Thread(() -> {
                 Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
                 String[] videoUris = null;
@@ -244,13 +245,19 @@ public class WebActivity extends Activity {
                     try {
                         JSONArray jsonArray = new JSONArray();
                         jsonArray.put(finalVideoUris[1]);
-                        jsonArray.put(uri);
                         obj.put("title", finalVideoUris[0]);
                         obj.put("videos", jsonArray);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    mWebView.evaluateJavascript("start('" + obj.toString() + "'," + id + ")", null);
+                    final String finalUri;
+                    if (uri.contains("/vodplay")) {
+                        finalUri = "/vodplay" + Shared.substringAfter(uri, "/vodplay");
+                    } else {
+                        finalUri = uri;
+                    }
+
+                    mWebView.evaluateJavascript("start('" + obj.toString() + "','" + finalUri + "')", null);
                 });
             }).start();
         }
