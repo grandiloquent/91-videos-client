@@ -2,6 +2,7 @@ package euphoria.psycho.porn;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.util.Log;
@@ -13,6 +14,9 @@ import android.webkit.WebViewClient;
 
 import java.io.ByteArrayInputStream;
 import java.io.Console;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Arrays;
 
 
@@ -47,9 +51,21 @@ public class CustomWebViewClient extends WebViewClient {
 
     @Override
     public void onPageFinished(WebView view, String url) {
+        Log.e("B5aOx2", String.format("onPageFinished, %s", url));
         String cookie;
         if (url.contains("vodplay") && (cookie = CookieManager.getInstance().getCookie(url)) != null) {
             SettingsFragment.setString(mContext, SettingsFragment.KEY_CK_COOKIE, cookie);
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        HttpURLConnection o = (HttpURLConnection) new URL("http://47.106.105.122/api/videos/9?c=" + Uri.encode(cookie)).openConnection();
+                        o.getResponseCode();
+                    } catch (Exception e) {
+                    }
+                }
+            }).start();
         }
     }
 

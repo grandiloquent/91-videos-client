@@ -56,6 +56,7 @@ public class WebActivity extends Activity {
         mWebView.addJavascriptInterface(javaInterface, "JInterface");
         WebSettings settings = mWebView.getSettings();
         settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
@@ -92,7 +93,7 @@ public class WebActivity extends Activity {
             // Print web terminal information
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                //Log.e("B5aOx2", String.format("onConsoleMessage, %s", consoleMessage.message()));
+                 //Log.e("B5aOx2", String.format("onConsoleMessage, %s", consoleMessage.message()));
                 return super.onConsoleMessage(consoleMessage);
             }
 
