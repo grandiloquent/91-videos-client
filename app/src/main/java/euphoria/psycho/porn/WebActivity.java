@@ -51,7 +51,7 @@ public class WebActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.web_activity);
         mWebView = findViewById(R.id.web_view);
-        mWebView.clearCache(true);
+        //mWebView.clearCache(true);
         JavaInterface javaInterface = new JavaInterface();
         mWebView.addJavascriptInterface(javaInterface, "JInterface");
         WebSettings settings = mWebView.getSettings();
