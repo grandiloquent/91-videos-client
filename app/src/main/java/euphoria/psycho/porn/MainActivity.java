@@ -306,9 +306,9 @@ public class MainActivity extends Activity {
                 } else if (position == 2) {
                     Intent starter = new Intent(MainActivity.this, SettingsActivity.class);
                     startActivity(starter);
-                } else {
-                    mWebView.loadUrl("https://hxz315.com");
-                }
+                } //else {
+                   // mWebView.loadUrl("https://hxz315.com");
+                //}
                 mRoot.dismissSheet();
             });
             mRoot.showWithSheetView(gridView);

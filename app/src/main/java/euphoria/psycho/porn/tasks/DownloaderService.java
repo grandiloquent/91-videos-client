@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Environment;
@@ -147,7 +148,8 @@ public class DownloaderService extends Service implements RequestListener {
     private Pair<String, String> getVideoInformation(String videoAddress) {
         Pair<String, String> results;
         if (videoAddress.contains("91porn.com")) {
-            results = WebActivity.process91Porn(videoAddress);
+            results = WebActivity.process91Porn(this, videoAddress);
+
         } else if (videoAddress.contains("xvideos.com")) {
             results = WebActivity.processXVideos(videoAddress);
         } else {
@@ -225,9 +227,8 @@ public class DownloaderService extends Service implements RequestListener {
                     mHandler.post(() -> Toast.makeText(DownloaderService.this, "失败 " + info.first, Toast.LENGTH_SHORT).show());
                 }
                 checkTask();
-            }else{
-
-                mHandler.post(() -> Toast.makeText(DownloaderService.this, "失败 "+videoAddress, Toast.LENGTH_SHORT).show());
+            } else {
+                mHandler.post(() -> Toast.makeText(DownloaderService.this, "失败 " + videoAddress, Toast.LENGTH_SHORT).show());
             }
         }).start();
         return super.onStartCommand(intent, flags, startId);

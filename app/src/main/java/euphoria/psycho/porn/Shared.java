@@ -82,6 +82,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -1503,7 +1504,42 @@ public class Shared {
         public String location;
         public String cookie;
     }
+    public static int findRange(int mask)
+    {
+        int x = 8 - mask;
+        int sum = 0;
+        for (int i = 0 ; i < x ; i++) {
+            sum += Math.pow(2 , i);
+        }
+        return sum;
+    }
 
+    public static int findFixedPart(String IPPrefix, int i)
+    {
+        String f = IPPrefix.split("\\.")[i];
+        return Integer.valueOf(f);
+    }
+
+    public static String generateRandomIP(String IPPrefix, Integer mask)
+    {
+        String IP="";
+        Random r = new Random();
+        if (mask < 8)
+            IP = (findFixedPart(IPPrefix, 0) + r.nextInt(findRange(mask))) + "." + r.nextInt(256) + "." + r.nextInt(256) + "." + r.nextInt(256);
+        else if (mask >7 && mask < 16)
+            IP = findFixedPart(IPPrefix, 0) + "." + (findFixedPart(IPPrefix, 1) + r.nextInt(findRange(mask-8))) + "." + r.nextInt(256) + "." + r.nextInt(256);
+        else if (mask >15 && mask < 24)
+            IP = findFixedPart(IPPrefix, 0) + "." + findFixedPart(IPPrefix, 1)  + "." + (findFixedPart(IPPrefix, 2) + r.nextInt(findRange(mask-16))) + "." + r.nextInt(256);
+        else if (mask >23 && mask < 33)
+            IP = findFixedPart(IPPrefix, 0) + "." + findFixedPart(IPPrefix, 1)  + "." + findFixedPart(IPPrefix, 2) + "." + (findFixedPart(IPPrefix, 3) + r.nextInt(findRange(mask-24)));
+        return IP;
+    }
+    public static String generateRandomIp() {
+        return (int) (Math.random() * System.nanoTime() % 255) + "." +
+                (int) (Math.random() * System.nanoTime() % 255) + "." +
+                (int) (Math.random() * System.nanoTime() % 255) + "." +
+                (int) (Math.random() * System.nanoTime() % 255);
+    }
 
 }
 

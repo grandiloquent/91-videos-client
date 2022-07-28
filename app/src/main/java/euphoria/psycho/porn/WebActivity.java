@@ -28,7 +28,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.Proxy.Type;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
@@ -45,6 +51,7 @@ public class WebActivity extends Activity {
     public static final String EXTRA_VIDEO_URL = "extra_video_url";
     private WebView mWebView;
 
+    private static String sUa;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +62,7 @@ public class WebActivity extends Activity {
         JavaInterface javaInterface = new JavaInterface();
         mWebView.addJavascriptInterface(javaInterface, "JInterface");
         WebSettings settings = mWebView.getSettings();
+        sUa = settings.getUserAgentString();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         mWebView.setWebViewClient(new WebViewClient() {
@@ -93,7 +101,7 @@ public class WebActivity extends Activity {
             // Print web terminal information
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                 //Log.e("B5aOx2", String.format("onConsoleMessage, %s", consoleMessage.message()));
+                Log.e("B5aOx2", String.format("onConsoleMessage, %s", consoleMessage.message()));
                 return super.onConsoleMessage(consoleMessage);
             }
 
@@ -122,6 +130,7 @@ public class WebActivity extends Activity {
             }
         });
         mWebView.loadUrl(Native.getUri());
+
     }
 
     /*public static Pair<String, String> process91Porn(String videoAddress) {
@@ -161,21 +170,60 @@ public class WebActivity extends Activity {
 //        }
         //  return null;
     }*/
-    public static Pair<String, String> process91Porn(String videoAddress) {
-        String response = Native.fetch91Porn(Uri.parse(videoAddress).getQueryParameter("viewkey"));
-        if (response == null) {
-            return null;
-        }
-        JSONObject jsonObject = null;
+    public static Pair<String, String> process91Porn(Context context, String videoAddress) {
+        String response = null;
+        //Native.fetch91Porn(Uri.parse(videoAddress).getQueryParameter("viewkey"));
+//        if (response == null) {
+//            return null;
+//        }
+        String title = null;
         try {
-            jsonObject = new JSONObject(response);
-            String title = jsonObject.getString("title");
-            String src = jsonObject.getString("videoUri");
-            return Pair.create(title, src);
-        } catch (JSONException ignored) {
-            Log.e("B5aOx2", String.format("process91Porn, %s", ignored));
+            Log.e("B5aOx2", String.format("process91Porn, %s", videoAddress));
+            HttpURLConnection c = (HttpURLConnection) new URL(videoAddress).openConnection();
+            c.addRequestProperty("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
+            c.addRequestProperty("Accept-Encoding","gzip, deflate");
+            c.addRequestProperty("Accept-Language","zh-CN,zh;q=0.9");
+            c.addRequestProperty("Cache-Control","max-age=0");
+            c.addRequestProperty("Host","91porn.com");
+            c.addRequestProperty("Proxy-Connection","keep-alive");
+            c.addRequestProperty("Upgrade-Insecure-Requests","1");
+            c.addRequestProperty("User-Agent","Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Mobile Safari/537.36");  // Mozilla/5.0 (Linux; Android 11; Redmi K30 Build/RKQ1.200826.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/94.0.4606.71 Mobile
+            //c.addRequestProperty("Cookie", "cf_clearance=yjq6tftr.tc47_P_FVKEgjrU5Zfs2BOpiJtma7RZcCM-1658348428-0-250; CLIPSHARE=ue9h0lmrliv0co0ee4o2n5mgfm; __utmc=50351329; __utmz=50351329.1658348430.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); views_t=393; __utma=50351329.454003299.1658348430.1658562840.1658564812.6; __utmb=50351329.0.10.1658564812");
+             c.addRequestProperty("X-Forwarded-For", Shared.generateRandomIp());
+            //c.addRequestProperty("Accept-Language", "zh-CN,zh;q=0.9");
+            c.setInstanceFollowRedirects(false);
+            Log.e("B5aOx2", String.format("process91Porn, %s", c.getResponseCode()));
+            if (c.getResponseCode() !=200) {
+//                BufferedReader reader = new BufferedReader(new InputStreamReader(c.getErrorStream()));
+//                String line;
+//                while ((line = reader.readLine()) != null) {
+//                    //Log.e("B5aOx2", String.format("process91Porn, %s", line));
+//                }
+//                reader.close();
+                return null;
+            }
+            response = Shared.readString(c);
+            if (response == null) {
+                return null;
+            }
+            title = Shared.substring(response, "<title>", "Chinese homemade video");
+            response = Shared.substring(response, "strencode2(\"", "\")");
+            response = Uri.decode(response);
+        } catch (Exception e) {
         }
-        return null;
+        Log.e("B5aOx2", String.format("process91Porn, %s", response));
+        //title
+        return Pair.create( title.trim(), Shared.substring(response, "src='", "'"));
+//        JSONObject jsonObject = null;
+//        try {
+//            jsonObject = new JSONObject(response);
+//            String title = jsonObject.getString("title");
+//            String src = jsonObject.getString("videoUri");
+//            return Pair.create(title, src);
+//        } catch (JSONException ignored) {
+//            Log.e("B5aOx2", String.format("process91Porn, %s", ignored));
+//        }
+        //return null;
     }
 
     public static Pair<String, String> processXVideos(String videoAddress) {
@@ -222,7 +270,7 @@ public class WebActivity extends Activity {
                 String[] videoUris = null;
                 Pair<String, String> results;
                 if (uri.contains("91porn.com")) {
-                    results = process91Porn(uri);
+                    results = process91Porn(WebActivity.this, uri);
                 } else if (uri.contains("xvideos.com")) {
                     results = processXVideos(uri);
                 } else {
@@ -257,7 +305,6 @@ public class WebActivity extends Activity {
                     } else {
                         finalUri = uri;
                     }
-
                     mWebView.evaluateJavascript("start('" + obj.toString() + "','" + finalUri + "')", null);
                 });
             }).start();
