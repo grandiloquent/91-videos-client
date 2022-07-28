@@ -98,7 +98,11 @@ public class PlayerActivity extends Activity implements OnTouchListener {
         intent.putExtra("sort", sort);
         context.startActivity(intent);
     }
-
+    public static void launchActivity(Context context, String videoFile) {
+        Intent intent = new Intent(context, PlayerActivity.class);
+        intent.putExtra(KEY_VIDEO_FILE, videoFile);
+        context.startActivity(intent);
+    }
     static int calculateScreenOrientation(Activity activity) {
         int displayRotation = getDisplayRotation(activity);
         boolean standard = displayRotation < 180;
@@ -405,6 +409,11 @@ public class PlayerActivity extends Activity implements OnTouchListener {
     }
 
     private void play() throws IOException {
+        if (mPlayList == null){
+            mMediaPlayer.setDataSource(getIntent().getStringExtra(KEY_VIDEO_FILE));
+            mMediaPlayer.prepareAsync();
+            return;
+        }
         getActionBar().setTitle(Shared.substringAfterLast(mPlayList.get(mPlayIndex), "/"));
         mMediaPlayer.setDataSource(mPlayList.get(mPlayIndex));
         mMediaPlayer.prepareAsync();
@@ -714,17 +723,20 @@ public class PlayerActivity extends Activity implements OnTouchListener {
             }
         });
         if (videoFile != null) {
-            loadPlaylist(new File(videoFile).getParentFile().getAbsolutePath());
-            if (mPlayList.size() < 2) {
-                prev.setAlpha(75);
-                next.setAlpha(75);
-                mPlayIndex = 0;
-            } else {
-                prev.setOnClickListener(this::onPrev);
-                next.setOnClickListener(this::onNext);
-                mPlayIndex = mPlayList.indexOf(videoFile);
+            if (new File(videoFile).exists()) {
+                loadPlaylist(new File(videoFile).getParentFile().getAbsolutePath());
+                if (mPlayList.size() < 2) {
+                    prev.setAlpha(75);
+                    next.setAlpha(75);
+                    mPlayIndex = 0;
+                } else {
+                    prev.setOnClickListener(this::onPrev);
+                    next.setOnClickListener(this::onNext);
+                    mPlayIndex = mPlayList.indexOf(videoFile);
+                }
+                return;
             }
-            return;
+
         }
 
 
